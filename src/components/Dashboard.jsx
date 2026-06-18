@@ -447,7 +447,10 @@ export default function Dashboard({ peaks, dataset, records, photos, onOpenRecor
                         {peak.range}
                       </span>
                       <span className={`difficulty-badge diff-${peak.difficulty.replace("+", "-plus")}`}>
-                        {peak.difficulty}
+                        {peak.difficulty === "A" ? "A級入門" :
+                         peak.difficulty === "B" ? "B級中階" :
+                         peak.difficulty === "C" ? "C級挑戰" :
+                         peak.difficulty === "C+" ? "C+級特殊" : peak.difficulty}
                       </span>
                     </div>
 
