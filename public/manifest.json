@@ -1,0 +1,16 @@
+{
+  "short_name": "智行百岳",
+  "name": "智行百岳個人完登紀錄與山系裝備規劃儀表板",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#f3f7f5",
+  "theme_color": "#1b4332",
+  "display": "standalone",
+  "orientation": "any"
+}
