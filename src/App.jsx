@@ -560,6 +560,21 @@ export default function App() {
           }}>
             © 2026 Studio0808 智造實驗室.<br/>
             All rights reserved.<br/>
+            <a 
+              href="mailto:begin0808@gmail.com?subject=%5B%E6%99%BA%E8%A1%8C%E7%99%BE%E5%B3%B3%E5%9B%9E%E5%A0%B1%5D" 
+              style={{ 
+                color: "var(--primary-light)", 
+                textDecoration: "none", 
+                fontWeight: "600", 
+                display: "inline-flex", 
+                alignItems: "center", 
+                gap: "2px",
+                margin: "4px 0"
+              }}
+              className="email-link"
+            >
+              ✉ 寫信給我
+            </a><br/>
             <span style={{ fontSize: "0.58rem", opacity: 0.7 }}>Version V20260618</span>
           </div>
         </div>
@@ -770,6 +785,10 @@ export default function App() {
       <style>{`
         .nav-link:hover {
           background: rgba(45, 90, 39, 0.04) !important;
+          color: var(--primary) !important;
+        }
+        .email-link:hover {
+          text-decoration: underline !important;
           color: var(--primary) !important;
         }
         @media (max-width: 768px) {
