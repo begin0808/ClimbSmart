@@ -220,7 +220,7 @@ export default function App() {
       <aside
         style={{
           width: "260px",
-          background: theme === "dark" ? "rgba(13, 27, 20, 0.9)" : "rgba(255, 255, 255, 0.8)",
+          background: "var(--bg-glass)",
           backdropFilter: "blur(12px)",
           borderRight: "1px solid var(--border-glass)",
           padding: "24px",
@@ -228,7 +228,10 @@ export default function App() {
           flexDirection: "column",
           justifyContent: "space-between",
           zIndex: 10,
-          flexShrink: 0
+          flexShrink: 0,
+          position: "sticky",
+          top: 0,
+          height: "100vh"
         }}
         className="sidebar"
       >
@@ -262,7 +265,7 @@ export default function App() {
                 onClick={toggleTheme}
                 title={theme === "dark" ? "切換為亮色模式" : "切換為暗色模式"}
                 style={{
-                  background: theme === "dark" ? "rgba(111,207,151,0.15)" : "rgba(45,90,39,0.08)",
+                  background: "var(--primary-glow)",
                   border: "none",
                   borderRadius: "8px",
                   padding: "6px",
@@ -555,7 +558,7 @@ export default function App() {
             color: "var(--text-muted)", 
             textAlign: "center", 
             marginTop: "10px",
-            opacity: 0.8,
+            opacity: 0.95,
             lineHeight: "1.4"
           }}>
             © 2026 Studio0808 智造實驗室.<br/>
@@ -575,7 +578,7 @@ export default function App() {
             >
               ✉ 寫信給我
             </a><br/>
-            <span style={{ fontSize: "0.58rem", opacity: 0.7 }}>Version V20260618</span>
+            <span style={{ fontSize: "0.58rem", opacity: 0.85 }}>Version V20260618</span>
           </div>
         </div>
       </aside>
@@ -583,7 +586,7 @@ export default function App() {
       {/* 手機版頂部導覽列（只在小螢幕時用 CSS 控制顯示，這裡用 JS 支援基本的適應性佈局） */}
       <header
         style={{
-          background: theme === "dark" ? "rgba(13, 27, 20, 0.95)" : "rgba(255, 255, 255, 0.9)",
+          background: "var(--bg-glass)",
           backdropFilter: "blur(12px)",
           borderBottom: "1px solid var(--border-glass)",
           padding: "12px 16px",
@@ -689,7 +692,7 @@ export default function App() {
             <button
               onClick={toggleTheme}
               style={{
-                background: theme === "dark" ? "rgba(111,207,151,0.15)" : "rgba(45,90,39,0.08)",
+                background: "var(--primary-glow)",
                 border: "none",
                 borderRadius: "6px",
                 padding: "6px",
