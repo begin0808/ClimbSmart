@@ -44,39 +44,40 @@
    Dark Mode 暗色主題覆寫
    ============================ */
 [data-theme="dark"] {
-  --bg-gradient-start: #0d1b14;
-  --bg-gradient-end: #121f18;
-  --bg-glass: rgba(20, 35, 28, 0.75);
-  --bg-glass-hover: rgba(28, 48, 38, 0.88);
-  --border-glass: rgba(60, 95, 72, 0.35);
-  --shadow-color: rgba(0, 0, 0, 0.25);
-  --shadow-hover: rgba(0, 0, 0, 0.4);
+  /* 背景與玻璃擬物（高山夜空與雲海） */
+  --bg-gradient-start: #0a141d;      /* 深邃星夜藍 */
+  --bg-gradient-end: #142230;        /* 晨曦雲海藍 */
+  --bg-glass: rgba(26, 40, 56, 0.75); /* 霧藍玻璃 */
+  --bg-glass-hover: rgba(35, 54, 75, 0.88);
+  --border-glass: rgba(100, 130, 165, 0.28); /* 霜白冰藍邊框 */
+  --shadow-color: rgba(5, 10, 20, 0.35);
+  --shadow-hover: rgba(5, 10, 20, 0.5);
 
-  /* 品牌色系 (暗色版) */
-  --primary: #6fcf97;
-  --primary-light: #82d9a5;
-  --primary-glow: rgba(111, 207, 151, 0.12);
-  --secondary: #d4a574;
-  --secondary-light: #e0b88a;
-  --accent-sky: #69b8e8;
+  /* 品牌色系 (暗色版 - 晴空與高山藍綠色調) */
+  --primary: #4cc9f0;                /* 晴空藍 */
+  --primary-light: #70d6ff;          /* 亮空藍 */
+  --primary-glow: rgba(76, 201, 240, 0.15);
+  --secondary: #e9c46a;              /* 金陽黃 */
+  --secondary-light: #f4a261;
+  --accent-sky: #4cc9f0;
 
-  /* 難度標籤色（暗色下提高飽和度以保持可讀性） */
-  --diff-a: #4ec98a;
-  --diff-b: #5aa8e0;
-  --diff-c: #f0845a;
-  --diff-c-plus: #f05050;
+  /* 難度標籤色 */
+  --diff-a: #2a9d8f;                 /* 湖水綠 */
+  --diff-b: #457b9d;                 /* 黛藍 */
+  --diff-c: #e76f51;                 /* 楓紅 */
+  --diff-c-plus: #e63946;            /* 警示紅 */
 
   /* 文字色系 */
-  --text-main: #e0ebe5;
-  --text-muted: #8fa99c;
+  --text-main: #f0f5fa;              /* 雪白 */
+  --text-muted: #98aabf;             /* 霧藍灰 */
   --text-light: #ffffff;
-  --success: #6fcf97;
+  --success: #4cc9f0;
 
-  /* 主題感知表面色（暗色版）：在深色底上用「微亮」取代「微暗」才看得見 */
+  /* 主題感知表面色 */
   --inset-bg: rgba(255, 255, 255, 0.04);
   --inset-bg-strong: rgba(255, 255, 255, 0.08);
   --inset-border: rgba(255, 255, 255, 0.12);
-  --surface-solid: rgba(20, 35, 28, 0.6);
+  --surface-solid: rgba(26, 40, 56, 0.65);
 }
 
 /* 暗色模式下的全域元素修正 */
@@ -94,7 +95,7 @@
 }
 
 [data-theme="dark"] .btn-primary {
-  background: linear-gradient(135deg, #2d6a4f 0%, #40916c 100%);
+  background: linear-gradient(135deg, #1d4d75 0%, var(--primary) 100%);
   color: #ffffff;
 }
 
@@ -105,18 +106,18 @@
 
 [data-theme="dark"] .btn-secondary:hover {
   background: var(--primary);
-  color: #0d1b14;
+  color: #0a141d;
 }
 
 [data-theme="dark"] .btn-icon {
-  background: rgba(20, 35, 28, 0.6);
+  background: rgba(26, 40, 56, 0.6);
   border-color: var(--border-glass);
   color: var(--text-main);
 }
 
 [data-theme="dark"] .btn-icon:hover {
   background: var(--primary);
-  color: #0d1b14;
+  color: #0a141d;
 }
 
 [data-theme="dark"] .modal-overlay {
@@ -124,7 +125,7 @@
 }
 
 [data-theme="dark"] .modal-content {
-  background: rgba(20, 35, 28, 0.96);
+  background: rgba(18, 30, 45, 0.96);
   border-color: var(--border-glass);
 }
 
@@ -138,7 +139,7 @@
 }
 
 [data-theme="dark"] .topo-bg {
-  background-image: radial-gradient(rgba(111, 207, 151, 0.08) 1.5px, transparent 1.5px);
+  background-image: radial-gradient(rgba(76, 201, 240, 0.08) 1.5px, transparent 1.5px);
   opacity: 0.1;
 }
 
@@ -146,34 +147,34 @@
 [data-theme="dark"] input[type="text"],
 [data-theme="dark"] input[type="number"],
 [data-theme="dark"] textarea {
-  background: rgba(20, 35, 28, 0.7) !important;
+  background: rgba(18, 30, 45, 0.75) !important;
   color: var(--text-main) !important;
   border-color: var(--border-glass) !important;
 }
 
 [data-theme="dark"] select option {
-  background: #1a2e23;
+  background: #152233;
   color: var(--text-main);
 }
 
 /* Leaflet 暗色適配 */
 [data-theme="dark"] .leaflet-tooltip {
-  background: rgba(20, 35, 28, 0.96) !important;
+  background: rgba(18, 30, 45, 0.96) !important;
   color: var(--text-main) !important;
   border-color: var(--primary) !important;
 }
 
 [data-theme="dark"] .leaflet-popup-content-wrapper {
-  background: rgba(20, 35, 28, 0.96) !important;
+  background: rgba(18, 30, 45, 0.96) !important;
   color: var(--text-main) !important;
 }
 
 [data-theme="dark"] .leaflet-popup-tip {
-  background: rgba(20, 35, 28, 0.96) !important;
+  background: rgba(18, 30, 45, 0.96) !important;
 }
 
 [data-theme="dark"] .leaflet-control-layers {
-  background: rgba(20, 35, 28, 0.9) !important;
+  background: rgba(18, 30, 45, 0.9) !important;
   color: var(--text-main) !important;
   border-color: var(--border-glass) !important;
 }
