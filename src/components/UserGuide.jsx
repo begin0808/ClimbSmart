@@ -48,22 +48,19 @@ export default function UserGuide() {
       {/* 六大核心模組詳細指南 */}
       <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
         
-        {/* 1. 百岳儀表板 */}
+        {/* 1. 百岳與小百岳儀表板 */}
         <div className="mist-card" style={{ padding: "24px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "var(--primary-light)", marginBottom: "14px" }}>
             <LayoutDashboard size={24} />
-            <h3 style={{ fontWeight: "800", fontSize: "1.2rem", margin: 0 }}>1. 完登記錄儀表板使用細則</h3>
+            <h3 style={{ fontWeight: "800", fontSize: "1.2rem", margin: 0 }}>1. 完登記錄儀表板與資料集切換</h3>
           </div>
           <div style={{ fontSize: "0.85rem", color: "var(--text-main)", lineHeight: "1.6" }}>
-            <p>**操作步驟**：</p>
+            <p>**操作指南**：</p>
             <ol style={{ paddingLeft: "20px", margin: "8px 0" }}>
-              <li>**完登打卡與上傳照片**：滑鼠點擊任意山峰卡片（或勾選核取方塊）將開啟編輯彈窗。您可以選擇登頂日期，並在「登頂照片」區塊拖放或選取您的登頂照。</li>
-              <li>**圖片本地壓縮**：為避免瀏覽器快取儲存空間限制，系統在您選取相片時會自動進行高畫質本地壓縮，隨後轉為 Base64 編碼，寫入瀏覽器的本機 `IndexedDB` 資料庫。</li>
-              <li>**搜尋與篩選**：您可以在上方搜尋框輸入「山名」、「高度」或「縣市」（如輸入「南投」可找出所有在南投的山峰）。右方則提供「山脈/地區」、「難度等級 (A/B/C/C+)」與「完登狀態」三合一篩選。</li>
+              <li>**百岳 / 小百岳切換**：利用側邊欄（或手機版頂部）的切換鈕，可即時在「100座百岳」與「100座小百岳」資料集之間進行切換，全站地圖及統計會同步更新。</li>
+              <li>**完登打卡與照片上傳**：點擊任意山峰卡片或勾選框，即可設定登頂日期並上傳登頂照。為節省空間，照片在上傳時會自動在瀏覽器內進行無損壓縮，隨後儲存在您的本機資料庫。</li>
+              <li>**多維度搜尋與篩選**：支援以山名、高度、縣市關鍵字進行搜尋；並能透過山脈地區、難度（A/B/C/C+）及完登狀態進行三合一複合過濾。</li>
             </ol>
-            <div style={{ background: "rgba(0,0,0,0.02)", padding: "12px", borderRadius: "8px", marginTop: "10px", borderLeft: "4px solid var(--secondary)" }}>
-              📌 **備份重要性**：由於資料完全儲存在您的瀏覽器內部快取。若使用系統優化軟體清理瀏覽器，或更換手機，資料將會遺失。請定期點選側邊欄最下方的 **「匯出」** 按鈕，下載您的 `.json` 紀錄檔案妥善保存；需要還原時，點選 **「匯入」** 即可。
-            </div>
           </div>
         </div>
 
@@ -71,14 +68,14 @@ export default function UserGuide() {
         <div className="mist-card" style={{ padding: "24px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "var(--primary-light)", marginBottom: "14px" }}>
             <Map size={24} />
-            <h3 style={{ fontWeight: "800", fontSize: "1.2rem", margin: 0 }}>2. 等高線互動式地圖操作</h3>
+            <h3 style={{ fontWeight: "800", fontSize: "1.2rem", margin: 0 }}>2. 等高線地圖操作與離線圖磚下載</h3>
           </div>
           <div style={{ fontSize: "0.85rem", color: "var(--text-main)", lineHeight: "1.6" }}>
-            <p>**操作步驟與特色**：</p>
+            <p>**地圖功能與離線下載**：</p>
             <ol style={{ paddingLeft: "20px", margin: "8px 0" }}>
-              <li>**平滑定位（FlyTo）**：在地圖右上角或左側欄切換百岳／小百岳。點選地圖上的藍色（百岳）或綠色（小百岳）圖標，會彈出該山峰的高度與難度資訊，點選彈窗中的「完登紀錄」可直接進行編輯。</li>
-              <li>**跨分頁飛越定位**：當您在首頁儀表板點選山峰卡片中的 **「MapPin」定位圖示** 時，系統會自動平滑切換至地圖分頁，並以 3D 動態飛越至該座標，讓您一眼看清該山峰的地形位置。</li>
-              <li>**圖層變更**：點選地圖右上角圖層按鈕，可切換「地形等高線圖（特別適合登山判讀）」、「標準街道圖」與「衛星影像圖」。</li>
+              <li>**平滑定位（FlyTo）**：在儀表板點擊山峰卡片右側的 **「MapPin」定位圖示**，系統會平滑切換至地圖分頁並動態飛越對焦到該座標，方便掌握周邊地形。</li>
+              <li>**地圖下載與快取（重要防迷）**：在右側「離線地圖快取管理」中，將地圖移動至即將前往的山區，選擇「細節層級」後點擊 **「下載目前畫面範圍」**，地圖等高線圖磚會快取至本地端。山區無訊號時，地圖仍可離線顯示。</li>
+              <li>**圖層切換**：點選地圖右上角圖層按鈕，可自由在「地形等高線圖」、「道路圖」或「衛星影像」間進行切換。</li>
             </ol>
           </div>
         </div>
@@ -90,12 +87,25 @@ export default function UserGuide() {
             <h3 style={{ fontWeight: "800", fontSize: "1.2rem", margin: 0 }}>3. 輕量化裝備規劃與天氣預報</h3>
           </div>
           <div style={{ fontSize: "0.85rem", color: "var(--text-main)", lineHeight: "1.6" }}>
-            <p>**操作步驟與科學指標**：</p>
+            <p>**裝備配重與Waypoint天氣**：</p>
             <ol style={{ paddingLeft: "20px", margin: "8px 0" }}>
-              <li>**極限負重試算**：點選上方路線按鈕（如：玉山兩天一夜），系統會載入官方建議裝備範本。勾選已打包項目，配重條會即時更新。</li>
-              <li>**基礎重量 (Base Weight)**：背包內「排除消耗品（水、食物、瓦斯）」後的總重量。國際輕量化指標建議多日行程應控制在 **6 至 8 公斤**以內，系統若偵測超重會顯示紅色「⚠️ 超出負擔」警告。</li>
-              <li>**高山天氣點位切換**：在右側天氣預報卡片中，您可以透過下拉選單選擇「該路線上的不同Waypoint」（例如玉山路線可看「塔塔加登山口」、「排雲山莊」、「玉山主峰頂」），系統會依據其精確海拔與座標重新發送 Open-Meteo API 查詢氣溫與降雨機率，並獨立快取。</li>
-              <li>**氣象署連結**：點選右側的「CWA 氣象署山岳氣象」，可直達中央氣象署的專業氣象警報頁面，雙重確認是否有豪雨特報。</li>
+              <li>**裝備清單與基礎重量 (Base Weight)**：載入建議範本後勾選已打包裝備。系統會為您扣除消耗品（水、食物），計算出科學「基礎重量」。若多日行程超重（大於 8 公斤），系統會發出紅色超重警告。</li>
+              <li>**高山天氣點位切換**：可在天氣卡片中下拉切換該路線的 Waypoints（如「塔塔加登山口」、「排雲山莊」、「玉山主峰頂」），系統會依不同點位的海拔經緯度呼叫高解析度氣象 API 並顯示 5 日天氣，同時附有中央氣象署 (CWA) 山岳氣象直達連結。</li>
+            </ol>
+          </div>
+        </div>
+
+        {/* 4. 統計分析 */}
+        <div className="mist-card" style={{ padding: "24px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "var(--primary-light)", marginBottom: "14px" }}>
+            <BarChart3 size={24} />
+            <h3 style={{ fontWeight: "800", fontSize: "1.2rem", margin: 0 }}>4. 個人完登統計分析與高度折算</h3>
+          </div>
+          <div style={{ fontSize: "0.85rem", color: "var(--text-main)", lineHeight: "1.6" }}>
+            <p>**數據統計解讀**：</p>
+            <ol style={{ paddingLeft: "20px", margin: "8px 0" }}>
+              <li>**累計登頂海拔**：自動加總您已完登的所有山峰高度，並以趣味方式換算成「累計高度相當於攀登了多少座珠穆朗瑪峰（8848m）」，將您的汗水與成就具象化。</li>
+              <li>**山脈與難度分布圖表**：以視覺化比例條展示您在各大山脈（如中央山脈、雪山山脈等）以及各難度分級的完登分布百分比，便於科學化評估與規劃下一階段的登山路線。</li>
             </ol>
           </div>
         </div>
@@ -104,17 +114,16 @@ export default function UserGuide() {
         <div className="mist-card" style={{ padding: "24px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "var(--primary-light)", marginBottom: "14px" }}>
             <Route size={24} />
-            <h3 style={{ fontWeight: "800", fontSize: "1.2rem", margin: 0 }}>4. 路線守護與 GPX 偏移警示使用說明</h3>
+            <h3 style={{ fontWeight: "800", fontSize: "1.2rem", margin: 0 }}>5. 路線守護與 GPX 偏移警示使用說明</h3>
           </div>
           <div style={{ fontSize: "0.85rem", color: "var(--text-main)", lineHeight: "1.6" }}>
-            <p>**離線防迷操作指引**（極為重要）：</p>
+            <p>**離線防迷操作指引**（安全核心）：</p>
             <ol style={{ paddingLeft: "20px", margin: "8px 0" }}>
-              <li>**行前匯入**：在有網路的環境下，點擊「選擇 GPX 檔案」載入目標山區軌跡，頁面會隨即繪製該路線的距離海拔剖面圖。</li>
-              <li>**山區開啟**：抵達登山口後，點擊 **「開啟 GPS 守護定位」**。瀏覽器會向您索取定位權限，請務必選擇「永遠允許」。</li>
-              <li>**偏移偵測**：當您實際走偏並距離計畫軌跡超出安全距離（預設為 50 公尺，可手動調整）時，手機會發出警示嗶嗶聲與網頁震動。</li>
+              <li>**匯入航跡與開啟 GPS**：行前匯入標準 GPX 軌跡檔。抵達登山口後，開啟「GPS守護定位」並允許瀏覽器取得您的 GPS 位置。</li>
+              <li>**防迷偏移警示**：當您實際行走路徑與計畫 GPX 軌跡偏離超過設定範圍（預設 50 公尺）時，瀏覽器會即時觸發語音、警報音與震動警告。</li>
             </ol>
             <div style={{ background: "rgba(0,0,0,0.02)", padding: "12px", borderRadius: "8px", marginTop: "10px", borderLeft: "4px solid var(--diff-c-plus)" }}>
-              ⚠️ **注意**：部分行動裝置（如 iOS Safari）在螢幕休眠時，會限制瀏覽器的 GPS 定位頻率以省電。**建議在通過複雜岔路或氣候惡劣時，將手機螢幕維持開啟**，或使用本平台作為離線地圖位置核對工具。
+              ⚠️ **注意**：部分行動裝置在螢幕休眠時會限制 GPS 獲取頻率。**建議在通過危險岔路或氣候不佳時維持螢幕開啟**，或隨時點亮螢幕利用本平台作為離線地圖核對當前位置。
             </div>
           </div>
         </div>
@@ -123,15 +132,34 @@ export default function UserGuide() {
         <div className="mist-card" style={{ padding: "24px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "var(--primary-light)", marginBottom: "14px" }}>
             <ShieldAlert size={24} style={{ color: "var(--diff-c-plus)" }} />
-            <h3 style={{ fontWeight: "800", fontSize: "1.2rem", margin: 0, color: "var(--diff-c-plus)" }}>5. 離線緊急求救與座標報讀</h3>
+            <h3 style={{ fontWeight: "800", fontSize: "1.2rem", margin: 0, color: "var(--diff-c-plus)" }}>6. 離線緊急求救與雙座標報讀</h3>
           </div>
           <div style={{ fontSize: "0.85rem", color: "var(--text-main)", lineHeight: "1.6" }}>
-            <p>**離線緊急避險指南**：</p>
+            <p>**離線緊急求救指引**：</p>
             <ol style={{ paddingLeft: "20px", margin: "8px 0" }}>
-              <li>**座標生成**：在迷路或遭遇山難時，請儘量移至空曠、無樹冠遮擋的高處。開啟本分頁，GPS 會離線讀取晶片數據，即時顯示您的座標。</li>
-              <li>**WGS84 格式**：即一般的度分秒格式（如 `23°28'13"N, 120°57'27"E`），適合報讀給直升機搜救隊。</li>
-              <li>**TWD97 橫軸墨卡托二度分帶座標**：顯示為 6 位與 7 位數字（如 `X: 242850, Y: 2596950`），此格式不受山區地形偏角干擾，是地面消防搜救小組定位最精準的格式。</li>
-              <li>**報讀範例**：若撥打 112 求救電話，請以電話通訊清楚報讀：「**我的 WGS84 座標為：北緯23度28分13秒，東經120度57分27秒，誤差範圍 X 公尺**」。</li>
+              <li>**雙座標顯示**：迷路或受困時，點擊進入「野外求救」頁面。GPS 會離線獲取晶片資料顯示精確座標。系統會同時呈現直升機吊掛適用的 **WGS84 格式（度分秒）** 以及消防搜救小組常用的 **TWD97 二度分帶座標**。</li>
+              <li>**報讀示範**：撥打 112 求救時，請清晰報讀：「**我的 WGS84 座標為：北緯 XX 度 XX 分 XX 秒，東經 XX 度 XX 分 XX 秒，誤差範圍 X 公尺**」，協助搜救人員在最短時間內精確定位。</li>
+            </ol>
+          </div>
+        </div>
+
+        {/* 7. 主題與備份 */}
+        <div className="mist-card" style={{ padding: "24px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "var(--primary-light)", marginBottom: "14px" }}>
+            <HardDrive size={24} />
+            <h3 style={{ fontWeight: "800", fontSize: "1.2rem", margin: 0 }}>7. 智慧時間感知主題與資料備份還原</h3>
+          </div>
+          <div style={{ fontSize: "0.85rem", color: "var(--text-main)", lineHeight: "1.6" }}>
+            <p>**系統功能說明**：</p>
+            <ol style={{ paddingLeft: "20px", margin: "8px 0" }}>
+              <li>**智慧時間感知偵測主題**：本平台的預設主題採用貼近戶外實用場景的「時間感應」機制：
+                <ul style={{ paddingLeft: "20px", margin: "4px 0", listStyleType: "circle" }}>
+                  <li>**白天（06:00 ～ 18:00）**：自動切換為高對比度的「山系自然風亮色主題」，便於日光下閱讀。</li>
+                  <li>**夜間（18:00 ～ 06:00）**：自動切換為溫和不刺眼的「深邃星夜藍暗色主題」，保護您在山上夜登時的雙眼。</li>
+                  <li>**手動控制**：可點選 Logo 旁的太陽/月亮按鈕手動鎖定；若想切回時間感應，點選下方出現的「自動」字樣即可。</li>
+                </ul>
+              </li>
+              <li>**本地備份匯入與匯出**：所有個人打卡、文字心得、照片及匯入的 GPX 全數儲存在您的瀏覽器內部（LocalStorage 與 IndexedDB）。請定期點選側邊欄左下角的「匯出」將數據下載為 `.json` 備份；若要移轉裝置，點擊「匯入」即可無縫還原所有進度。</li>
             </ol>
           </div>
         </div>
