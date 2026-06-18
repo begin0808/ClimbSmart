@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Search, Filter, Trophy, TrendingUp, Compass, Calendar, Camera, MapPin } from "lucide-react";
+import { Search, Filter, Trophy, TrendingUp, Compass, Calendar, Camera, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function Dashboard({ peaks, dataset, records, photos, onOpenRecord }) {
   const isMini = dataset === "mini";
@@ -9,12 +9,18 @@ export default function Dashboard({ peaks, dataset, records, photos, onOpenRecor
   const [selectedDifficulty, setSelectedDifficulty] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all"); // all, done, todo
   const [sortBy, setSortBy] = useState("id-asc"); // id-asc, elev-desc, elev-asc, diff-asc
+  const [currentPage, setCurrentPage] = useState(1);
 
   // 切換資料集時重置可能不存在於新資料集的篩選條件
   useEffect(() => {
     setSelectedRange("all");
     setSelectedDifficulty("all");
   }, [dataset]);
+
+  // 當任何篩選條件或資料集改變時，將分頁重置回第一頁
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [dataset, searchQuery, selectedRange, selectedDifficulty, selectedStatus, sortBy]);
 
   // 1. 數據統計計算
   const stats = useMemo(() => {
@@ -101,6 +107,14 @@ export default function Dashboard({ peaks, dataset, records, photos, onOpenRecor
 
     return result;
   }, [peaks, records, searchQuery, selectedRange, selectedDifficulty, selectedStatus, sortBy]);
+
+  const ITEMS_PER_PAGE = 20;
+  const totalPages = Math.ceil(filteredPeaks.length / ITEMS_PER_PAGE);
+
+  const paginatedPeaks = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredPeaks.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredPeaks, currentPage]);
 
   return (
     <div style={{ flex: 1, padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
@@ -352,7 +366,7 @@ export default function Dashboard({ peaks, dataset, records, photos, onOpenRecor
       ) : (
         <>
           <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "12px", fontWeight: "500" }}>
-            共顯示 {filteredPeaks.length} 座山峰
+            顯示第 {(currentPage - 1) * ITEMS_PER_PAGE + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, filteredPeaks.length)} 筆，共 {filteredPeaks.length} 座山峰
           </p>
           <div
             style={{
@@ -361,7 +375,7 @@ export default function Dashboard({ peaks, dataset, records, photos, onOpenRecor
               gap: "16px"
             }}
           >
-            {filteredPeaks.map((peak) => {
+            {paginatedPeaks.map((peak) => {
               const record = records[peak.id];
               const isClimbed = !!record;
               const photo = photos[peak.id];
@@ -467,6 +481,38 @@ export default function Dashboard({ peaks, dataset, records, photos, onOpenRecor
               );
             })}
           </div>
+
+          {totalPages > 1 && (
+            <div className="pagination-container">
+              <button
+                className="pagination-btn"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                title="上一頁"
+              >
+                <ChevronLeft size={16} />
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  className={`pagination-btn ${currentPage === page ? "active" : ""}`}
+                  onClick={() => setCurrentPage(page)}
+                >
+                  {page}
+                </button>
+              ))}
+
+              <button
+                className="pagination-btn"
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                title="下一頁"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>
