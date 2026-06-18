@@ -223,7 +223,7 @@ export default function App() {
           background: "var(--bg-glass)",
           backdropFilter: "blur(12px)",
           borderRight: "1px solid var(--border-glass)",
-          padding: "24px",
+          padding: "20px 18px",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
@@ -231,11 +231,12 @@ export default function App() {
           flexShrink: 0,
           position: "sticky",
           top: 0,
-          height: "100vh"
+          height: "100vh",
+          overflowY: "auto"
         }}
         className="sidebar"
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
           {/* Logo 區 + 主題切換 */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -332,9 +333,9 @@ export default function App() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "12px",
+                gap: "10px",
                 width: "100%",
-                padding: "12px 16px",
+                padding: "9px 12px",
                 borderRadius: "10px",
                 border: "none",
                 background: activeTab === "dashboard" ? "var(--primary-glow)" : "transparent",
@@ -350,15 +351,15 @@ export default function App() {
               <LayoutDashboard size={18} />
               <span>百岳儀表板</span>
             </button>
-
+ 
             <button
               onClick={() => setActiveTab("map")}
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "12px",
+                gap: "10px",
                 width: "100%",
-                padding: "12px 16px",
+                padding: "9px 12px",
                 borderRadius: "10px",
                 border: "none",
                 background: activeTab === "map" ? "var(--primary-glow)" : "transparent",
@@ -374,15 +375,15 @@ export default function App() {
               <Map size={18} />
               <span>互動式地圖</span>
             </button>
-
+ 
             <button
               onClick={() => setActiveTab("gear")}
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "12px",
+                gap: "10px",
                 width: "100%",
-                padding: "12px 16px",
+                padding: "9px 12px",
                 borderRadius: "10px",
                 border: "none",
                 background: activeTab === "gear" ? "var(--primary-glow)" : "transparent",
@@ -398,15 +399,15 @@ export default function App() {
               <Briefcase size={18} />
               <span>裝備規劃器</span>
             </button>
-
+ 
             <button
               onClick={() => setActiveTab("stats")}
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "12px",
+                gap: "10px",
                 width: "100%",
-                padding: "12px 16px",
+                padding: "9px 12px",
                 borderRadius: "10px",
                 border: "none",
                 background: activeTab === "stats" ? "var(--primary-glow)" : "transparent",
@@ -422,15 +423,15 @@ export default function App() {
               <BarChart3 size={18} />
               <span>統計分析</span>
             </button>
-
+ 
             <button
               onClick={() => setActiveTab("route")}
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "12px",
+                gap: "10px",
                 width: "100%",
-                padding: "12px 16px",
+                padding: "9px 12px",
                 borderRadius: "10px",
                 border: "none",
                 background: activeTab === "route" ? "var(--primary-glow)" : "transparent",
@@ -446,15 +447,15 @@ export default function App() {
               <Route size={18} />
               <span>路線守護</span>
             </button>
-
+ 
             <button
               onClick={() => setActiveTab("guide")}
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "12px",
+                gap: "10px",
                 width: "100%",
-                padding: "12px 16px",
+                padding: "9px 12px",
                 borderRadius: "10px",
                 border: "none",
                 background: activeTab === "guide" ? "var(--primary-glow)" : "transparent",
@@ -470,15 +471,15 @@ export default function App() {
               <BookOpen size={18} />
               <span>使用說明</span>
             </button>
-
+ 
             <button
               onClick={() => setActiveTab("sos")}
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "12px",
+                gap: "10px",
                 width: "100%",
-                padding: "12px 16px",
+                padding: "9px 12px",
                 borderRadius: "10px",
                 border: "none",
                 background: activeTab === "sos" ? "rgba(214, 40, 40, 0.08)" : "transparent",
@@ -498,13 +499,13 @@ export default function App() {
         </div>
 
         {/* 底部備份備忘與資料備份功能 */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           <div
             style={{
-              padding: "12px",
+              padding: "8px 10px",
               background: "rgba(0,0,0,0.02)",
               borderRadius: "8px",
-              fontSize: "0.75rem",
+              fontSize: "0.72rem",
               color: "var(--text-muted)",
               lineHeight: "1.4"
             }}
@@ -517,7 +518,7 @@ export default function App() {
               onClick={handleExportBackup}
               className="btn-secondary"
               style={{
-                padding: "8px 4px",
+                padding: "6px 4px",
                 fontSize: "0.75rem",
                 justifyContent: "center",
                 gap: "4px",
@@ -533,7 +534,7 @@ export default function App() {
               onClick={() => document.getElementById("import-file-input").click()}
               className="btn-secondary"
               style={{
-                padding: "8px 4px",
+                padding: "6px 4px",
                 fontSize: "0.75rem",
                 justifyContent: "center",
                 gap: "4px",
@@ -557,7 +558,7 @@ export default function App() {
             fontSize: "0.65rem", 
             color: "var(--text-muted)", 
             textAlign: "center", 
-            marginTop: "10px",
+            marginTop: "6px",
             opacity: 0.95,
             lineHeight: "1.4"
           }}>
