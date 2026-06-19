@@ -175,7 +175,7 @@ export default function Dashboard({ peaks, dataset, records, photos, onOpenRecor
               {stats.completedCount} <span style={{ fontSize: "0.9rem", fontWeight: "500", color: "var(--text-muted)" }}>/ {peaks.length} 座</span>
             </p>
             <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "2px" }}>
-              {isMini ? "台灣小百岳郊山健行收集" : "台灣百岳完登俱樂部認證起點"}
+              {isMini ? "臺灣小百岳郊山健行收集" : "臺灣百岳完登俱樂部認證起點"}
             </p>
           </div>
         </div>

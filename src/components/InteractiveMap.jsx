@@ -383,8 +383,8 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
         }
       });
 
-      // 圖層 C: 台灣登山魯地圖
-      const rudyTiles = createOfflineTileLayer("https://rs.happyman.idv.tw/map/moi_osm/{z}/{x}/{y}.png", {
+      // 圖層 C: 臺灣登山魯地圖
+      const rudyTiles = createOfflineTileLayer("https://tile.happyman.idv.tw/map/moi_osm/{z}/{x}/{y}.png", {
         maxZoom: 18,
         attribution: "Rudy Map &copy; 魯地圖登山開源社群",
         className: "map-tile-invertible",
@@ -395,7 +395,19 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
         }
       });
 
-      // 圖層 D: 衛星影像圖
+      // 圖層 D: 國土測繪中心 官方通用版電子地圖（NLSC，官方維運最穩定）
+      const nlscTiles = createOfflineTileLayer("https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}", {
+        maxZoom: 18,
+        attribution: "&copy; 內政部國土測繪中心 NLSC",
+        className: "map-tile-invertible",
+        onTileCached: () => {
+          if (updateCacheCountRef.current) {
+            updateCacheCountRef.current();
+          }
+        }
+      });
+
+      // 圖層 E: 衛星影像圖
       const satelliteTiles = createOfflineTileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
         maxZoom: 18,
         attribution: "Tiles &copy; Esri &mdash; Source: Esri, USDA, USGS, and the GIS User Community",
@@ -417,8 +429,9 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
       const baseMaps = {
         "地形等高線圖": topoTiles,
         "標準道路地圖": osmTiles,
-        "台灣登山魯地圖": rudyTiles,
-        "衛星影像地圖": satelliteTiles
+        "國土測繪電子地圖": nlscTiles,
+        "衛星影像地圖": satelliteTiles,
+        "臺灣登山魯地圖": rudyTiles
       };
       L.control.layers(baseMaps, null, { position: "bottomleft" }).addTo(map);
       L.control.zoom({ position: "topright" }).addTo(map);
@@ -603,7 +616,7 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
       >
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <Compass size={20} style={{ color: "var(--primary-light)" }} />
-          <h3 style={{ fontSize: "1.1rem", fontWeight: "700", color: "var(--primary)" }}>{isMini ? "台灣小百岳等高線地形圖" : "台灣百岳等高線地形圖"}</h3>
+          <h3 style={{ fontSize: "1.1rem", fontWeight: "700", color: "var(--primary)" }}>{isMini ? "臺灣小百岳等高線地形圖" : "臺灣百岳等高線地形圖"}</h3>
         </div>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", alignItems: "center" }}>

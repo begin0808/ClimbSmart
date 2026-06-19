@@ -1,8 +1,8 @@
 // ============================================================
-// 台灣小百岳 完整資料集（100 座）
+// 臺灣小百岳 完整資料集（100 座）
 // ============================================================
 // 資料來源與方法：
-// 1. 編號 / 名稱 / 海拔：採「2017 年修訂後台灣小百岳」官方清單（維基彙整）。
+// 1. 編號 / 名稱 / 海拔：採「2017 年修訂後臺灣小百岳」官方清單（維基彙整）。
 // 2. 經緯度（lat/lng）：取自 OpenStreetMap (natural=peak) 實際山峰點位，
 //    並以 ele 海拔標籤對照官方海拔逐筆消歧義；OSM 無收錄者改以
 //    OpenStreetMap Nominatim 地名搜尋定位。
@@ -37,7 +37,7 @@ const M = (num, name, range, county, elevation, lat, lng) => ({
   group: county,
   suggestedDays: "單日",
   trailhead: "",
-  intro: `台灣小百岳 #${num}，位於${county}，海拔 ${elevation} 公尺。`
+  intro: `臺灣小百岳 #${num}，位於${county}，海拔 ${elevation} 公尺。`
 });
 
 export const MINI_PEAKS = [

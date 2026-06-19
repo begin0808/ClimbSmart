@@ -1,4 +1,4 @@
-// 台灣百岳完整資料庫 - 真實地理座標與小百科資料
+// 臺灣百岳完整資料庫 - 真實地理座標與小百科資料
 export const PEAKS = [
   { 
     id: 1, 
@@ -12,7 +12,7 @@ export const PEAKS = [
     group: "五嶽之首",
     suggestedDays: "2天1夜",
     trailhead: "塔塔加登山口",
-    intro: "台灣第一高峰，也是東北亞最高峰。玉山主峰氣勢磅礴，山容雄偉，四季景觀多變。攀登路徑規劃完善，設有排雲山莊供登山客住宿，是許多台灣人一生必挑戰的指標目標。"
+    intro: "臺灣第一高峰，也是東北亞最高峰。玉山主峰氣勢磅礴，山容雄偉，四季景觀多變。攀登路徑規劃完善，設有排雲山莊供登山客住宿，是許多臺灣人一生必挑戰的指標目標。"
   },
   { 
     id: 2, 
@@ -26,7 +26,7 @@ export const PEAKS = [
     group: "五嶽-2",
     suggestedDays: "2天1夜",
     trailhead: "武陵農場雪山登山口",
-    intro: "台灣第二高峰。雪山主峰擁有台灣最完整的冰河時期圈谷地形（雪山一號圈谷），春季杜鵑花海盛開，冬季白雪皚皚，沿途的黑森林是全台最壯麗的冷杉純林之一。"
+    intro: "臺灣第二高峰。雪山主峰擁有臺灣最完整的冰河時期圈谷地形（雪山一號圈谷），春季杜鵑花海盛開，冬季白雪皚皚，沿途的黑森林是全台最壯麗的冷杉純林之一。"
   },
   { 
     id: 3, 
@@ -54,7 +54,7 @@ export const PEAKS = [
     group: "八秀",
     suggestedDays: "2天1夜",
     trailhead: "塔塔加登山口",
-    intro: "山頂建有台灣海拔最高的氣象測候所（玉山氣象站）。從玉山北峰眺望玉山主峰，是千元台幣紙鈔背面的經典玉山全景視角。"
+    intro: "山頂建有臺灣海拔最高的氣象測候所（玉山氣象站）。從玉山北峰眺望玉山主峰，是千元台幣紙鈔背面的經典玉山全景視角。"
   },
   { 
     id: 5, 
@@ -82,7 +82,7 @@ export const PEAKS = [
     group: "五嶽-3",
     suggestedDays: "3-4天",
     trailhead: "東埔登山口 (八通關日治越嶺道)",
-    intro: "中央山脈最高峰。秀姑巒山山容寬廣，山脊遍佈白木林遺蹟，與玉山、雪山、南湖大山、北大武山合稱台灣「五嶽」，為中央山脈的群山之尊。"
+    intro: "中央山脈最高峰。秀姑巒山山容寬廣，山脊遍佈白木林遺蹟，與玉山、雪山、南湖大山、北大武山合稱臺灣「五嶽」，為中央山脈的群山之尊。"
   },
   { 
     id: 7, 
@@ -110,7 +110,7 @@ export const PEAKS = [
     group: "五嶽-4",
     suggestedDays: "4天3夜",
     trailhead: "思源埡口登山口",
-    intro: "被譽為「帝王之山」。南湖大山擁有巨大的圈谷構造、帝王般的對稱山容與豐富的高山冰河孑遺植物（如南湖柳葉菜）。其氣勢恢宏，是台灣最具代表性的高山景觀之一。"
+    intro: "被譽為「帝王之山」。南湖大山擁有巨大的圈谷構造、帝王般的對稱山容與豐富的高山冰河孑遺植物（如南湖柳葉菜）。其氣勢恢宏，是臺灣最具代表性的高山景觀之一。"
   },
   { 
     id: 9, 
@@ -138,7 +138,7 @@ export const PEAKS = [
     group: "三尖之首",
     suggestedDays: "3-4天",
     trailhead: "思源埡口登山口",
-    intro: "台灣「三尖」之首。山形呈完美的金字塔銳角，南壁為陡峭的崩崖，北壁則是直瀉千尺的碎石坡，高聳入雲，氣勢銳不可擋，是岳界公認的險峰。"
+    intro: "臺灣「三尖」之首。山形呈完美的金字塔銳角，南壁為陡峭的崩崖，北壁則是直瀉千尺的碎石坡，高聳入雲，氣勢銳不可擋，是岳界公認的險峰。"
   },
   { 
     id: 11, 
@@ -208,7 +208,7 @@ export const PEAKS = [
     group: "十崇",
     suggestedDays: "6-7天 (東郡橫斷)",
     trailhead: "郡大林道登山口",
-    intro: "東郡山彙的最高峰。地理位置深遠孤立，山容極為寬廣宏偉，山頂附近有大片平坦的高山草坡，是台灣著名的荒野秘境。"
+    intro: "東郡山彙的最高峰。地理位置深遠孤立，山容極為寬廣宏偉，山頂附近有大片平坦的高山草坡，是臺灣著名的荒野秘境。"
   },
   { 
     id: 16, 
@@ -222,7 +222,7 @@ export const PEAKS = [
     group: "一奇",
     suggestedDays: "2-3天 (奇萊主北)",
     trailhead: "合歡山奇萊登山口",
-    intro: "赫赫有名的「黑色奇萊」。奇萊北峰三面斷崖，岩壁陡峭，在陽光逆光下呈現黑色陰森的氣勢。然而其黃昏時分的金黃色草坡，亦是台灣高山最柔美的奇景。"
+    intro: "赫赫有名的「黑色奇萊」。奇萊北峰三面斷崖，岩壁陡峭，在陽光逆光下呈現黑色陰森的氣勢。然而其黃昏時分的金黃色草坡，亦是臺灣高山最柔美的奇景。"
   },
   { 
     id: 17, 
@@ -320,7 +320,7 @@ export const PEAKS = [
     group: "十崇-3",
     suggestedDays: "5-6天 (雪山西稜)",
     trailhead: "武陵農場登山口",
-    intro: "雪山西稜路線的最高峰，山容極為寬廣宏大，周邊環繞著高山草原與冷杉森林，經常能巧遇台灣野生水鹿。"
+    intro: "雪山西稜路線的最高峰，山容極為寬廣宏大，周邊環繞著高山草原與冷杉森林，經常能巧遇臺灣野生水鹿。"
   },
   { 
     id: 24, 
@@ -489,7 +489,7 @@ export const PEAKS = [
     group: "無",
     suggestedDays: "15-2小時 (一日)",
     trailhead: "台14甲線昆陽與武嶺之間",
-    intro: "台灣最容易親近的百岳之一。沿途為平緩的產業道路，視野遼闊，登頂可俯瞰清境農場與合歡公路的蜿蜒曲線，是觀賞日出、雲海與日落的極佳場所。"
+    intro: "臺灣最容易親近的百岳之一。沿途為平緩的產業道路，視野遼闊，登頂可俯瞰清境農場與合歡公路的蜿蜒曲線，是觀賞日出、雲海與日落的極佳場所。"
   },
   { 
     id: 36, 
@@ -573,7 +573,7 @@ export const PEAKS = [
     group: "五嶽-5",
     suggestedDays: "2天1夜 (檜谷山莊)",
     trailhead: "新大武登山口",
-    intro: "南台灣唯一的百岳，排灣族的聖山。北大武山以壯麗的鐵杉純林、排山倒海的「大武雲海」與氣勢磅礴的落日夕陽聞名，是南台灣的登山信仰中心。"
+    intro: "南臺灣唯一的百岳，排灣族的聖山。北大武山以壯麗的鐵杉純林、排山倒海的「大武雲海」與氣勢磅礴的落日夕陽聞名，是南臺灣的登山信仰中心。"
   },
   { 
     id: 42, 
@@ -587,7 +587,7 @@ export const PEAKS = [
     group: "武陵四秀-2",
     suggestedDays: "2-3天",
     trailhead: "武陵山莊登山口",
-    intro: "因山脊西側有一處池有池而得名。山頂散佈大量碎石，沿途的「池有名樹」是一棵姿態優美的台灣鐵杉，是步道上的著名地標。"
+    intro: "因山脊西側有一處池有池而得名。山頂散佈大量碎石，沿途的「池有名樹」是一棵姿態優美的臺灣鐵杉，是步道上的著名地標。"
   },
   { 
     id: 43, 
@@ -685,7 +685,7 @@ export const PEAKS = [
     group: "十崇-6",
     suggestedDays: "2天1夜 (天池山莊)",
     trailhead: "屯原登山口 (能高越嶺道)",
-    intro: "台灣最柔美的黃金草原之一。與奇萊主北的險峻不同，奇萊南峰是一座平緩柔美的綠色草坡，登頂看日出照亮整片草原，如同置身仙境。"
+    intro: "臺灣最柔美的黃金草原之一。與奇萊主北的險峻不同，奇萊南峰是一座平緩柔美的綠色草坡，登頂看日出照亮整片草原，如同置身仙境。"
   },
   { 
     id: 50, 
@@ -708,7 +708,7 @@ export const PEAKS = [
   { id: 54, name: "光頭山", elevation: 3060, range: "中央山脈", difficulty: "B", county: "南投/花蓮", lat: 23.9511, lng: 121.2722, group: "草原", suggestedDays: "4-5天", trailhead: "屯原", intro: "山頂有一座巨大的白色崩壁，頂部是開闊的高山短草坡，視野開闊。" },
   { id: 55, name: "白石山", elevation: 3110, range: "中央山脈", difficulty: "B", county: "南投/花蓮", lat: 23.9067, lng: 121.2800, group: "水鹿樂園", suggestedDays: "4-5天", trailhead: "屯原", intro: "白石池畔是水鹿聚居之地，也是高山攝影愛好者的夢幻天堂。" },
   { id: 56, name: "安東軍山", elevation: 3068, range: "中央山脈", difficulty: "B", county: "南投/花蓮", lat: 23.8683, lng: 121.2708, group: "高山湖泊群", suggestedDays: "5天", trailhead: "奧萬大或屯原", intro: "能高安東軍的最後一座百岳，山容秀麗，峰頂擁有無敵的360度大視野。" },
-  { id: 57, name: "達芬尖山", elevation: 3208, range: "中央山脈", difficulty: "B", county: "南投/高雄/花蓮", lat: 23.4478, lng: 121.0189, group: "三尖-3", suggestedDays: "5-6天", trailhead: "東埔/向陽", intro: "台灣三尖之一，山頂小巧尖銳，形如錐子，聳立於荖濃溪谷之上。" },
+  { id: 57, name: "達芬尖山", elevation: 3208, range: "中央山脈", difficulty: "B", county: "南投/高雄/花蓮", lat: 23.4478, lng: 121.0189, group: "三尖-3", suggestedDays: "5-6天", trailhead: "東埔/向陽", intro: "臺灣三尖之一，山頂小巧尖銳，形如錐子，聳立於荖濃溪谷之上。" },
   { id: 58, name: "塔關山", elevation: 3222, range: "中央山脈", difficulty: "A", county: "高雄/台東", lat: 23.2508, lng: 120.9167, group: "南橫三星", suggestedDays: "1天", trailhead: "南橫庫哈諾辛關山嶺段", intro: "南橫三星中最容易親近的一座，巨木參天，路徑好走，頂峰展望壯麗。" },
   { id: 59, name: "關山嶺山", elevation: 3176, range: "中央山脈", difficulty: "A", county: "高雄/台東", lat: 23.2725, lng: 120.9250, group: "南橫三星", suggestedDays: "1天", trailhead: "大關山隧道旁", intro: "登山口位於大關山隧道旁，山頂展望絕佳，可俯瞰南橫公路蜿蜒美景。" },
   { id: 60, name: "庫哈諾辛山", elevation: 3115, range: "中央山脈", difficulty: "A", county: "高雄", lat: 23.2389, lng: 120.8778, group: "南橫三星", suggestedDays: "1天", trailhead: "進涇橋", intro: "山勢和緩，步道階梯完備，為登關山及南橫縱走的前哨站。" },
@@ -721,7 +721,7 @@ export const PEAKS = [
   { id: 67, name: "甘薯峰", elevation: 3158, range: "中央山脈", difficulty: "C", county: "台中/花蓮", lat: 24.2983, lng: 121.3486, group: "遠征", suggestedDays: "4天", trailhead: "730林道", intro: "北二段深處的山頭，沿途碎石滑坡及箭竹林極為磨人，得名甘薯。" },
   { id: 68, name: "無明山西峰", elevation: 3225, range: "中央山脈", difficulty: "C", county: "台中/花蓮", lat: 24.2467, lng: 121.3789, group: "無", suggestedDays: "5天", trailhead: "靜觀", intro: "靠近無明山主峰，碎石斷崖遍布，攀登危險性高。" },
   { id: 69, name: "中央尖山東峰", elevation: 3580, range: "中央山脈", difficulty: "C+", county: "台中/花蓮", lat: 24.308165, lng: 121.423615, group: "無", suggestedDays: "4-5天", trailhead: "思源埡口", intro: "聳立於中央尖山主峰旁，巨石錯落，坡度陡峭，非一般登山客能輕易企及。" },
-  { id: 70, name: "伊澤山", elevation: 3297, range: "雪山山脈", difficulty: "A", county: "新竹/苗栗", lat: 24.4489, lng: 121.2386, group: "大霸群峰", suggestedDays: "3天", trailhead: "大鹿林道", intro: "大霸群峰之一，為台灣最容易攀登的矮箭竹草原百岳，視野無限開闊。" },
+  { id: 70, name: "伊澤山", elevation: 3297, range: "雪山山脈", difficulty: "A", county: "新竹/苗栗", lat: 24.4489, lng: 121.2386, group: "大霸群峰", suggestedDays: "3天", trailhead: "大鹿林道", intro: "大霸群峰之一，為臺灣最容易攀登的矮箭竹草原百岳，視野無限開闊。" },
   { id: 71, name: "加利山", elevation: 3112, range: "雪山山脈", difficulty: "A", county: "新竹/苗栗", lat: 24.4419, lng: 121.2214, group: "大霸群峰", suggestedDays: "3天", trailhead: "大鹿林道", intro: "大霸群峰的入門前哨，山頂和緩平坦，是看夕陽與聖稜線的極佳地標。" },
   { id: 72, name: "大雪山北峰", elevation: 3435, range: "雪山山脈", difficulty: "C", county: "台中/苗栗", lat: 24.3495, lng: 121.1189, group: "無", suggestedDays: "5天", trailhead: "武陵", intro: "大雪山群峰的一環，人煙稀少，充滿高山荒野氛圍。" },
   { id: 73, name: "中雪山", elevation: 3173, range: "雪山山脈", difficulty: "B", county: "苗栗", lat: 24.3283, lng: 121.0967, group: "無", suggestedDays: "5天", trailhead: "大雪山林道", intro: "雪山西稜路線上的密林山頭，以茂密的箭竹海與陡坡著名。" },

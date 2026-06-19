@@ -49,7 +49,7 @@ const toDMS = (val, isLat) => {
   return `${dir} ${degrees}°${minutes}'${seconds}"`;
 };
 
-// WGS84 經緯度投影轉換為台灣 TWD97 二度分帶坐標 (TM2) 數學投影公式
+// WGS84 經緯度投影轉換為臺灣 TWD97 二度分帶坐標 (TM2) 數學投影公式
 const wgs84ToTwd97 = (lat, lon) => {
   const a = 6378137.0;
   const b = 6356752.314245;

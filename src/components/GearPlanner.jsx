@@ -466,7 +466,7 @@ export default function GearPlanner({ dataset, onLocateOnMap }) {
     const elevations = profile.map((p) => p.elevation);
 
     const maxDistance = Math.max(...distances) || 1;
-    const maxElevation = 4000; // 台灣百岳高度頂點大約 4000m
+    const maxElevation = 4000; // 臺灣百岳高度頂點大約 4000m
     const minElevation = 2400; // 最低給 2400m，以便展示爬升高度差
 
     const points = profile.map((p) => {
