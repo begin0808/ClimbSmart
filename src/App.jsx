@@ -623,7 +623,7 @@ export default function App() {
             >
               ✉ 寫信給我
             </a><br/>
-            <span style={{ fontSize: "0.58rem", opacity: 0.85 }}>Version V20260618</span>
+            <span style={{ fontSize: "0.58rem", opacity: 0.85 }}>Version V20260619</span>
           </div>
         </div>
       </aside>
