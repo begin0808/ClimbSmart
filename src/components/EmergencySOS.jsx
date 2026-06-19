@@ -1,11 +1,24 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { AlertTriangle, Copy, Volume2, Phone, MessageSquare, ShieldAlert, Zap, Compass, RefreshCw, Users, Clock, Navigation, BatteryLow, CheckSquare, Plus, Trash2, Save, MapPin } from "lucide-react";
+import { AlertTriangle, Copy, Volume2, Phone, MessageSquare, ShieldAlert, Zap, Compass, RefreshCw, Users, Clock, Navigation, BatteryLow, CheckSquare, Plus, Trash2, Save, MapPin, ClipboardList, HeartPulse, Lightbulb, Crosshair, UserCheck, Timer, AlertCircle } from "lucide-react";
+import EmergencyReference from "./EmergencyReference";
 
 // ====== localStorage 工具 ======
 const CONTACTS_KEY = "tw100peaks_emergency_contacts";
 const CHECKLIST_KEY = "tw100peaks_safety_checklist";
 const BREADCRUMB_KEY = "tw100peaks_breadcrumbs";
 const SOS_TIMER_KEY = "tw100peaks_sos_timer";
+const SAR_KEY = "tw100peaks_sar_card";
+
+// 個人/醫療救援卡 + 登山計畫（留守人、預計下山時間）
+const DEFAULT_SAR = {
+  name: "", age: "", bloodType: "", allergies: "", conditions: "", meds: "",
+  teamSize: "", plannedRoute: "", leaveName: "", leavePhone: "", expectedReturn: ""
+};
+const loadSAR = () => {
+  try { return { ...DEFAULT_SAR, ...(JSON.parse(localStorage.getItem(SAR_KEY)) || {}) }; }
+  catch { return { ...DEFAULT_SAR }; }
+};
+const saveSAR = (data) => localStorage.setItem(SAR_KEY, JSON.stringify(data));
 
 const loadContacts = () => {
   try {
@@ -81,6 +94,22 @@ const wgs84ToTwd97 = (lat, lon) => {
   return { x: Math.round(x), y: Math.round(y) };
 };
 
+// 救援卡輸入欄位
+function Field({ label, value, onChange, type = "text", placeholder, full }) {
+  return (
+    <label style={{ display: "flex", flexDirection: "column", gap: "3px", gridColumn: full ? "1 / -1" : "auto" }}>
+      <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", fontWeight: "600" }}>{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        style={{ padding: "8px 10px", borderRadius: "6px", border: "1px solid var(--border-glass)", fontSize: "0.85rem", background: "var(--inset-bg)", color: "var(--text-main)", width: "100%" }}
+      />
+    </label>
+  );
+}
+
 export default function EmergencySOS() {
   // ====== 分頁控制 ======
   const [activePanel, setActivePanel] = useState("sos"); // sos | contacts | breadcrumb | checklist
@@ -133,6 +162,118 @@ export default function EmergencySOS() {
 
   // ====== 超級省電模式 ======
   const [isPowerSaving, setIsPowerSaving] = useState(false);
+
+  // ====== 救援卡 / 留守人 / 預計下山時間 ======
+  const [sar, setSar] = useState(loadSAR);
+  const [nowTs, setNowTs] = useState(() => Date.now());
+  useEffect(() => {
+    const i = setInterval(() => setNowTs(Date.now()), 30000);
+    return () => clearInterval(i);
+  }, []);
+  const updateSar = (patch) => {
+    const next = { ...sar, ...patch };
+    setSar(next);
+    saveSAR(next);
+  };
+  const expReturnTs = sar.expectedReturn ? new Date(sar.expectedReturn).getTime() : null;
+  const isOverdue = !!expReturnTs && nowTs > expReturnTs;
+
+  // 組出救援卡摘要（供傳給留守人）
+  const getRescueInfoText = () => {
+    const parts = [];
+    if (sar.name) parts.push(`姓名:${sar.name}${sar.age ? `(${sar.age}歲)` : ""}`);
+    if (sar.teamSize) parts.push(`隊伍${sar.teamSize}人`);
+    if (sar.bloodType) parts.push(`血型:${sar.bloodType}`);
+    if (sar.allergies) parts.push(`過敏:${sar.allergies}`);
+    if (sar.conditions) parts.push(`病史:${sar.conditions}`);
+    if (sar.meds) parts.push(`常用藥:${sar.meds}`);
+    if (sar.plannedRoute) parts.push(`路線:${sar.plannedRoute}`);
+    return parts.join("，");
+  };
+  const handleSendRescueSMS = (phoneNum = "") => {
+    const info = getRescueInfoText();
+    const loc = coords
+      ? getSMSBody().replace("【山域緊急求救】我需要救助。", "")
+      : "（目前尚未取得 GPS 定位，請開啟定位）";
+    const body = `【山域求救通報】${info ? info + "。" : ""}${loc}`;
+    window.location.href = `sms:${phoneNum}?body=${encodeURIComponent(body)}`;
+  };
+
+  // ====== 螢幕恆亮 Wake Lock（手動切換，預設關閉以省電）======
+  const wakeLockRef = useRef(null);
+  const [wakeActive, setWakeActive] = useState(false);
+  const wakeSupported = typeof navigator !== "undefined" && "wakeLock" in navigator;
+  const enableWake = useCallback(async () => {
+    if (!wakeSupported) return;
+    try {
+      wakeLockRef.current = await navigator.wakeLock.request("screen");
+      wakeLockRef.current.addEventListener("release", () => setWakeActive(false));
+      setWakeActive(true);
+    } catch { setWakeActive(false); }
+  }, [wakeSupported]);
+  const disableWake = useCallback(async () => {
+    try { await wakeLockRef.current?.release(); } catch { /* 略 */ }
+    wakeLockRef.current = null;
+    setWakeActive(false);
+  }, []);
+  const toggleWake = () => (wakeActive ? disableWake() : enableWake());
+  // 切回前景時若仍開啟則重新取得（系統會在背景自動釋放）
+  useEffect(() => {
+    const onVis = async () => {
+      if (wakeActive && document.visibilityState === "visible" && !wakeLockRef.current && wakeSupported) {
+        try {
+          wakeLockRef.current = await navigator.wakeLock.request("screen");
+          wakeLockRef.current.addEventListener("release", () => setWakeActive(false));
+        } catch { /* 略 */ }
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [wakeActive, wakeSupported]);
+
+  // ====== GPS 高精度多次平均 ======
+  const [isAveraging, setIsAveraging] = useState(false);
+  const [avgProgress, setAvgProgress] = useState(0);
+  const avgWatchRef = useRef(null);
+  const getHighAccuracyLocation = useCallback(() => {
+    if (!navigator.geolocation) { setLocatingError("您的瀏覽器不支援 GPS 定位。"); return; }
+    setLocatingError(null); setIsAveraging(true); setAvgProgress(0);
+    const samples = [];
+    const TARGET = 8;
+    const finalize = () => {
+      if (avgWatchRef.current != null) { navigator.geolocation.clearWatch(avgWatchRef.current); avgWatchRef.current = null; }
+      if (samples.length === 0) { setIsAveraging(false); return; }
+      let wsum = 0, latS = 0, lngS = 0, altS = 0, altW = 0, best = Infinity;
+      samples.forEach((s) => {
+        const w = 1 / Math.pow(Math.max(s.acc, 1), 2); // 以精度倒數平方加權
+        wsum += w; latS += s.lat * w; lngS += s.lng * w;
+        if (s.acc < best) best = s.acc;
+        if (s.alt != null) { altS += s.alt * w; altW += w; }
+      });
+      setCoords({ lat: latS / wsum, lng: lngS / wsum });
+      setAccuracy(best);
+      setAltitude(altW ? altS / altW : null);
+      setIsAveraging(false);
+    };
+    avgWatchRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        samples.push({ lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy, alt: pos.coords.altitude });
+        setAvgProgress(samples.length);
+        if (samples.length >= TARGET) finalize();
+      },
+      (err) => {
+        if (samples.length > 0) { finalize(); return; }
+        let msg = "高精度定位失敗。";
+        if (err.code === err.PERMISSION_DENIED) msg = "權限遭拒：請允許位置權限。";
+        else if (err.code === err.POSITION_UNAVAILABLE) msg = "GPS 訊號太弱，請到開闊處。";
+        else if (err.code === err.TIMEOUT) msg = "定位超時。";
+        setLocatingError(msg); setIsAveraging(false);
+      },
+      { enableHighAccuracy: true, timeout: 25000, maximumAge: 0 }
+    );
+    // 最長 25 秒，收到多少樣本就用多少
+    setTimeout(() => { if (avgWatchRef.current != null) finalize(); }, 25000);
+  }, []);
 
   // ====================================================
   // 電子指南針邏輯
@@ -447,6 +588,8 @@ TWD97 (二度分帶): X ${twd97Coord.x}, Y ${twd97Coord.y}
       if (soundIntervalRef.current) clearInterval(soundIntervalRef.current);
       if (flashTimeoutRef.current) clearTimeout(flashTimeoutRef.current);
       if (breadcrumbIntervalRef.current) clearInterval(breadcrumbIntervalRef.current);
+      if (avgWatchRef.current != null) navigator.geolocation.clearWatch(avgWatchRef.current);
+      if (wakeLockRef.current) { try { wakeLockRef.current.release(); } catch { /* 略 */ } }
       window.removeEventListener("deviceorientation", handleOrientation);
       window.removeEventListener("deviceorientationabsolute", handleOrientation);
     };
@@ -565,24 +708,64 @@ TWD97 (二度分帶): X ${twd97Coord.x}, Y ${twd97Coord.y}
             </p>
           </div>
         </div>
-        <button
-          onClick={() => setIsPowerSaving(true)}
-          style={{
-            padding: "6px 12px", borderRadius: "8px", fontSize: "0.75rem", fontWeight: "600", cursor: "pointer",
-            background: "rgba(214,40,40,0.08)", border: "1px solid var(--diff-c-plus)", color: "var(--diff-c-plus)",
-            display: "flex", alignItems: "center", gap: "4px", whiteSpace: "nowrap"
-          }}
-        >
-          <BatteryLow size={14} /> 省電模式
-        </button>
+        <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+          <button
+            onClick={toggleWake}
+            disabled={!wakeSupported}
+            title={wakeSupported ? "求救時保持螢幕恆亮（避免閃光/哨音/GPS 中斷）。較耗電，請斟酌電量手動開關。" : "此裝置／瀏覽器不支援螢幕恆亮"}
+            style={{
+              padding: "6px 12px", borderRadius: "8px", fontSize: "0.75rem", fontWeight: "600",
+              cursor: wakeSupported ? "pointer" : "not-allowed",
+              background: wakeActive ? "rgba(240,192,64,0.18)" : "var(--inset-bg)",
+              border: `1px solid ${wakeActive ? "#f0c040" : "var(--border-glass)"}`,
+              color: wakeActive ? "#b8860b" : "var(--text-muted)", opacity: wakeSupported ? 1 : 0.5,
+              display: "flex", alignItems: "center", gap: "4px", whiteSpace: "nowrap"
+            }}
+          >
+            <Lightbulb size={14} /> {wakeActive ? "螢幕恆亮：開" : "螢幕恆亮"}
+          </button>
+          <button
+            onClick={() => setIsPowerSaving(true)}
+            style={{
+              padding: "6px 12px", borderRadius: "8px", fontSize: "0.75rem", fontWeight: "600", cursor: "pointer",
+              background: "rgba(214,40,40,0.08)", border: "1px solid var(--diff-c-plus)", color: "var(--diff-c-plus)",
+              display: "flex", alignItems: "center", gap: "4px", whiteSpace: "nowrap"
+            }}
+          >
+            <BatteryLow size={14} /> 省電模式
+          </button>
+        </div>
       </div>
+
+      {/* 逾時未下山警示橫幅 */}
+      {isOverdue && (
+        <div className="mist-card" style={{ padding: "14px 18px", display: "flex", gap: "12px", alignItems: "center", background: "rgba(214,40,40,0.08)", borderLeft: "5px solid var(--diff-c-plus)", flexWrap: "wrap" }}>
+          <AlertCircle size={24} style={{ color: "var(--diff-c-plus)", flexShrink: 0 }} />
+          <div style={{ flex: 1, minWidth: "180px" }}>
+            <div style={{ fontWeight: "800", color: "var(--diff-c-plus)", fontSize: "0.95rem" }}>⚠️ 已超過預計下山時間</div>
+            <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "2px" }}>
+              預計 {new Date(sar.expectedReturn).toLocaleString("zh-TW", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}。請盡速向留守人報平安，或評估是否需要求援。
+            </div>
+          </div>
+          {sar.leavePhone && (
+            <a href={`tel:${sar.leavePhone.replace(/\s/g, "")}`} className="btn-primary" style={{ background: "var(--diff-c-plus)", padding: "8px 12px", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
+              <Phone size={14} /> 撥打留守人
+            </a>
+          )}
+        </div>
+      )}
 
       {/* 分頁按鈕列 */}
       <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
         <button onClick={() => setActivePanel("sos")} style={tabBtnStyle(activePanel === "sos")}><ShieldAlert size={14} /> 定位求救</button>
+        <button onClick={() => setActivePanel("card")} style={tabBtnStyle(activePanel === "card")}>
+          <ClipboardList size={14} /> 救援卡
+          {isOverdue && <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "var(--diff-c-plus)", display: "inline-block" }} />}
+        </button>
         <button onClick={() => setActivePanel("contacts")} style={tabBtnStyle(activePanel === "contacts")}><Users size={14} /> 緊急聯絡人</button>
         <button onClick={() => setActivePanel("breadcrumb")} style={tabBtnStyle(activePanel === "breadcrumb")}><Navigation size={14} /> 足跡回溯</button>
         <button onClick={() => setActivePanel("checklist")} style={tabBtnStyle(activePanel === "checklist")}><CheckSquare size={14} /> 安全檢查</button>
+        <button onClick={() => setActivePanel("reference")} style={tabBtnStyle(activePanel === "reference")}><HeartPulse size={14} /> 應急參考</button>
       </div>
 
       {/* ====== 定位求救面板 ====== */}
@@ -687,8 +870,11 @@ TWD97 (二度分帶): X ${twd97Coord.x}, Y ${twd97Coord.y}
               {locatingError && (
                 <div style={{ fontSize: "0.8rem", color: "var(--diff-c-plus)", padding: "8px", background: "rgba(214,40,40,0.05)", borderRadius: "6px", fontWeight: "600" }}>{locatingError}</div>
               )}
-              <button onClick={getGPSLocation} className="btn-primary" style={{ justifyContent: "center", padding: "10px", fontWeight: "600" }} disabled={isLocating}>
+              <button onClick={getGPSLocation} className="btn-primary" style={{ justifyContent: "center", padding: "10px", fontWeight: "600" }} disabled={isLocating || isAveraging}>
                 <RefreshCw size={14} className={isLocating ? "animate-spin" : ""} /> {isLocating ? "搜尋中..." : coords ? "重新定位" : "開啟 GPS 定位"}
+              </button>
+              <button onClick={getHighAccuracyLocation} className="btn-secondary" style={{ justifyContent: "center", padding: "9px", fontWeight: "600" }} disabled={isAveraging || isLocating}>
+                <Crosshair size={14} className={isAveraging ? "animate-spin" : ""} /> {isAveraging ? `高精度取樣中… ${avgProgress}/8` : "高精度定位（多次平均）"}
               </button>
             </div>
 
@@ -793,6 +979,70 @@ TWD97 (二度分帶): X ${twd97Coord.x}, Y ${twd97Coord.y}
                 </ol>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ====== 救援卡面板 ====== */}
+      {activePanel === "card" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div className="mist-card" style={{ padding: "20px" }}>
+            <h4 style={{ fontSize: "1rem", fontWeight: "700", color: "var(--primary)", marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
+              <ClipboardList size={18} /> 個人 / 醫療救援卡
+            </h4>
+            <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "14px" }}>
+              預填個人與醫療資訊，求救時可直接念給搜救單位，或一鍵傳給留守人。資料只存在本機瀏覽器。
+            </p>
+
+            {/* 個人 / 醫療 */}
+            <div style={{ fontSize: "0.8rem", fontWeight: "700", color: "var(--secondary)", margin: "4px 0 8px", display: "flex", alignItems: "center", gap: "5px" }}><HeartPulse size={14} /> 個人與醫療</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+              <Field label="姓名" value={sar.name} onChange={(e) => updateSar({ name: e.target.value })} placeholder="王小明" />
+              <Field label="年齡" value={sar.age} onChange={(e) => updateSar({ age: e.target.value })} type="number" placeholder="35" />
+              <Field label="血型" value={sar.bloodType} onChange={(e) => updateSar({ bloodType: e.target.value })} placeholder="O / A / B / AB" />
+              <Field label="隊伍人數" value={sar.teamSize} onChange={(e) => updateSar({ teamSize: e.target.value })} type="number" placeholder="4" />
+              <Field label="過敏" value={sar.allergies} onChange={(e) => updateSar({ allergies: e.target.value })} placeholder="盤尼西林…（無則留空）" full />
+              <Field label="慢性病史" value={sar.conditions} onChange={(e) => updateSar({ conditions: e.target.value })} placeholder="心臟病、糖尿病…" full />
+              <Field label="常用藥物" value={sar.meds} onChange={(e) => updateSar({ meds: e.target.value })} placeholder="高血壓藥…" full />
+            </div>
+
+            {/* 行程 / 留守人 */}
+            <div style={{ fontSize: "0.8rem", fontWeight: "700", color: "var(--secondary)", margin: "16px 0 8px", display: "flex", alignItems: "center", gap: "5px" }}><UserCheck size={14} /> 行程與留守人</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+              <Field label="預計路線" value={sar.plannedRoute} onChange={(e) => updateSar({ plannedRoute: e.target.value })} placeholder="嘉明湖 3 天 2 夜" full />
+              <Field label="留守人姓名" value={sar.leaveName} onChange={(e) => updateSar({ leaveName: e.target.value })} placeholder="家人 / 朋友" />
+              <Field label="留守人電話" value={sar.leavePhone} onChange={(e) => updateSar({ leavePhone: e.target.value })} type="tel" placeholder="09xx-xxx-xxx" />
+              <Field label="預計下山時間（逾時自動警示）" value={sar.expectedReturn} onChange={(e) => updateSar({ expectedReturn: e.target.value })} type="datetime-local" full />
+            </div>
+
+            {/* 預計下山狀態 */}
+            {sar.expectedReturn && (
+              <div style={{ marginTop: "12px", padding: "10px 14px", borderRadius: "8px", background: isOverdue ? "rgba(214,40,40,0.08)" : "rgba(45,90,39,0.06)", display: "flex", alignItems: "center", gap: "8px", fontSize: "0.82rem", fontWeight: "600", color: isOverdue ? "var(--diff-c-plus)" : "var(--success)" }}>
+                <Timer size={16} />
+                {isOverdue
+                  ? `已逾預計下山時間，請盡速報平安！`
+                  : `預計下山：${new Date(sar.expectedReturn).toLocaleString("zh-TW", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}`}
+              </div>
+            )}
+
+            {/* 行動按鈕 */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginTop: "16px" }}>
+              <button onClick={() => handleSendRescueSMS(sar.leavePhone)} className="btn-primary" style={{ justifyContent: "center", padding: "10px", fontSize: "0.85rem" }} disabled={!sar.leavePhone && !getRescueInfoText()}>
+                <MessageSquare size={14} /> 傳救援資訊給留守人
+              </button>
+              {sar.leavePhone ? (
+                <a href={`tel:${sar.leavePhone.replace(/\s/g, "")}`} className="btn-secondary" style={{ justifyContent: "center", padding: "10px", fontSize: "0.85rem", textDecoration: "none" }}>
+                  <Phone size={14} /> 撥打留守人
+                </a>
+              ) : (
+                <button className="btn-secondary" style={{ justifyContent: "center", padding: "10px", fontSize: "0.85rem" }} disabled>
+                  <Phone size={14} /> 撥打留守人
+                </button>
+              )}
+            </div>
+            <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "10px", lineHeight: 1.5 }}>
+              💡 出發前也請把這張救援卡的內容（路線、預計下山時間、隊伍人數）告知留守人，並依《登山自治條例》向轄管單位提交登山計畫書。
+            </p>
           </div>
         </div>
       )}
@@ -996,6 +1246,9 @@ TWD97 (二度分帶): X ${twd97Coord.x}, Y ${twd97Coord.y}
           </div>
         </div>
       )}
+
+      {/* ====== 應急參考面板（緊急電話 + 衛星SOS + 急救指引）====== */}
+      {activePanel === "reference" && <EmergencyReference />}
 
       <style>{`
         .animate-spin { animation: spin 1.2s linear infinite; }

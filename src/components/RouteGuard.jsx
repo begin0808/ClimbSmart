@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Route, Upload, LocateFixed, Play, Pause, BellOff, Bell, Gauge, AlertTriangle, Crosshair, Trash2, CheckCircle2 } from "lucide-react";
 import L from "leaflet";
-import { parseGPX, getMapTile, saveMapTile } from "../utils/db";
+import { parseGPX } from "../utils/db";
+import { createOfflineTileLayer } from "../utils/offlineTileLayer";
 import RouteElevationProfile from "./RouteElevationProfile";
 
 // ====== localStorage 鍵 ======
@@ -86,58 +87,6 @@ const loadSettings = () => {
   }
 };
 
-const createOfflineTileLayer = (urlTemplate, options) => {
-  const OfflineTileLayer = L.TileLayer.extend({
-    createTile: function (coords, done) {
-      const tile = document.createElement("img");
-
-      L.DomEvent.on(tile, "load", L.Util.bind(this._tileOnLoad, this, done, tile));
-      L.DomEvent.on(tile, "error", L.Util.bind(this._tileOnError, this, done, tile));
-
-      if (this.options.crossOrigin || this.options.crossOrigin === "") {
-        tile.crossOrigin = this.options.crossOrigin === true ? "" : this.options.crossOrigin;
-      }
-      tile.alt = "";
-
-      const url = this.getTileUrl(coords);
-
-      getMapTile(url)
-        .then((blob) => {
-          if (blob) {
-            const objectUrl = URL.createObjectURL(blob);
-            tile.src = objectUrl;
-            L.DomEvent.on(tile, "unload", () => {
-              URL.revokeObjectURL(objectUrl);
-            });
-          } else {
-            fetch(url)
-              .then((res) => {
-                if (!res.ok) throw new Error("Tile fetch failed");
-                return res.blob();
-              })
-              .then((blob) => {
-                saveMapTile(url, blob);
-                const objectUrl = URL.createObjectURL(blob);
-                tile.src = objectUrl;
-                L.DomEvent.on(tile, "unload", () => {
-                  URL.revokeObjectURL(objectUrl);
-                });
-              })
-              .catch(() => {
-                tile.src = url;
-              });
-          }
-        })
-        .catch(() => {
-          tile.src = url;
-        });
-
-      return tile;
-    }
-  });
-
-  return new OfflineTileLayer(urlTemplate, options);
-};
 
 export default function RouteGuard() {
   const [route, setRoute] = useState(loadRoute); // { name, points, importedAt }

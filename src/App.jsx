@@ -338,8 +338,8 @@ export default function App() {
           {/* 資料集切換：百岳 / 小百岳 */}
           <div style={{ display: "flex", background: "var(--inset-bg)", borderRadius: "10px", padding: "3px", gap: "2px" }}>
             {[
-              { key: "peaks", label: "百岳" },
-              { key: "mini", label: "小百岳" }
+              { key: "peaks", label: "臺灣百岳" },
+              { key: "mini", label: "臺灣小百岳" }
             ].map((ds) => (
               <button
                 key={ds.key}
@@ -752,8 +752,8 @@ export default function App() {
         {/* 手機版資料集切換 */}
         <div style={{ display: "flex", background: "var(--inset-bg)", borderRadius: "8px", padding: "2px", gap: "2px", marginTop: "10px" }}>
           {[
-            { key: "peaks", label: "百岳" },
-            { key: "mini", label: "小百岳" }
+            { key: "peaks", label: "臺灣百岳" },
+            { key: "mini", label: "臺灣小百岳" }
           ].map((ds) => (
             <button
               key={ds.key}

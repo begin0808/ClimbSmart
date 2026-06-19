@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Compass, ZoomIn, ZoomOut, CheckCircle2, Circle, Eye, MapPin, Database, Trash2, DownloadCloud, XCircle, ChevronDown, ChevronUp } from "lucide-react";
 import L from "leaflet";
 import { getMapTile, saveMapTile, clearMapTiles, getMapTileCount } from "../utils/db";
+import { createOfflineTileLayer } from "../utils/offlineTileLayer";
 import RouteElevationProfile from "./RouteElevationProfile";
 
 // Leaflet 標記自訂樣式生成 - 亮橘紅點（已爬）與珍珠白黑框點（未爬），高山地圖上對比鮮明
@@ -22,65 +23,6 @@ const createMarkerIcon = (isClimbed, difficulty) => {
     iconSize: [14, 14],
     iconAnchor: [7, 7]
   });
-};
-
-// 離線地圖圖磚自訂載入層 - 攔截下載並存於 IndexedDB
-const createOfflineTileLayer = (urlTemplate, options) => {
-  const OfflineTileLayer = L.TileLayer.extend({
-    createTile: function (coords, done) {
-      const tile = document.createElement("img");
-
-      L.DomEvent.on(tile, "load", L.Util.bind(this._tileOnLoad, this, done, tile));
-      L.DomEvent.on(tile, "error", L.Util.bind(this._tileOnError, this, done, tile));
-
-      if (this.options.crossOrigin || this.options.crossOrigin === "") {
-        tile.crossOrigin = this.options.crossOrigin === true ? "" : this.options.crossOrigin;
-      }
-      tile.alt = "";
-
-      const url = this.getTileUrl(coords);
-      const key = url;
-
-      getMapTile(key)
-        .then((blob) => {
-          if (blob) {
-            const objectUrl = URL.createObjectURL(blob);
-            tile.src = objectUrl;
-            L.DomEvent.on(tile, "unload", () => {
-              URL.revokeObjectURL(objectUrl);
-            });
-          } else {
-            // 從網路獲取
-            fetch(url)
-              .then((res) => {
-                if (!res.ok) throw new Error("Tile fetch failed");
-                return res.blob();
-              })
-              .then((blob) => {
-                saveMapTile(key, blob);
-                const objectUrl = URL.createObjectURL(blob);
-                tile.src = objectUrl;
-                L.DomEvent.on(tile, "unload", () => {
-                  URL.revokeObjectURL(objectUrl);
-                });
-                if (this.options.onTileCached) {
-                  this.options.onTileCached();
-                }
-              })
-              .catch(() => {
-                tile.src = url; // 失敗時的備用方案
-              });
-          }
-        })
-        .catch(() => {
-          tile.src = url;
-        });
-
-      return tile;
-    }
-  });
-
-  return new OfflineTileLayer(urlTemplate, options);
 };
 
 // ====== 主動式區域下載：Slippy Tile 數學工具 ======
