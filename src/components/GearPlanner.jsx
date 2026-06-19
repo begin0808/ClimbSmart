@@ -452,7 +452,7 @@ export default function GearPlanner({ dataset, onLocateOnMap }) {
   // SVG 海拔剖面圖點位映射計算
   // ----------------------------------------------------
   const svgProfileData = useMemo(() => {
-    const profile = currentRoute.elevationProfile || [];
+    const profile = currentRoute?.elevationProfile || [];
     if (profile.length === 0) return null;
 
     const svgWidth = 600;
