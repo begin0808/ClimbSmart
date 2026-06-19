@@ -8,7 +8,8 @@ import {
   deletePhoto,
   getAllPhotos,
   exportAllData,
-  importAllData
+  importAllData,
+  requestPersistentStorage
 } from "./utils/db";
 
 // 載入子組件
@@ -108,6 +109,9 @@ export default function App() {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxActivePeakId, setLightboxActivePeakId] = useState(null);
 
+  // 資料定期備份提示
+  const [needsBackupReminder, setNeedsBackupReminder] = useState(false);
+
   const handleOpenLightbox = (peakId) => {
     setLightboxActivePeakId(peakId);
     setIsLightboxOpen(true);
@@ -127,7 +131,27 @@ export default function App() {
       .catch((err) => {
         console.error("無法載入 IndexedDB 照片:", err);
       });
+
+    // 啟用瀏覽器持久化儲存保護 (Persistent Storage)
+    requestPersistentStorage();
   }, []);
+
+  // 定期備份偵測提醒
+  useEffect(() => {
+    const recordCount = Object.keys(records).length;
+    if (recordCount === 0) {
+      setNeedsBackupReminder(false);
+      return;
+    }
+    const lastBackup = localStorage.getItem("tw100peaks_last_backup_time");
+    if (!lastBackup) {
+      setNeedsBackupReminder(true);
+    } else {
+      const diffMs = Date.now() - parseInt(lastBackup, 10);
+      const diffDays = diffMs / (1000 * 60 * 60 * 24);
+      setNeedsBackupReminder(diffDays > 30);
+    }
+  }, [records]);
 
   // 當使用者點選某座百岳以進行完登登錄
   const handleOpenRecord = (peak) => {
@@ -194,6 +218,8 @@ export default function App() {
   const handleExportBackup = async () => {
     try {
       await exportAllData();
+      localStorage.setItem("tw100peaks_last_backup_time", Date.now().toString());
+      setNeedsBackupReminder(false);
     } catch (e) {
       alert("備份失敗！");
     }
@@ -517,10 +543,16 @@ export default function App() {
               borderRadius: "8px",
               fontSize: "0.72rem",
               color: "var(--text-muted)",
-              lineHeight: "1.4"
+              lineHeight: "1.4",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "4px"
             }}
           >
-            💡 資料已安全保存在您的本地瀏覽器快取中。
+            {needsBackupReminder 
+              ? "⚠️ 完登紀錄尚未備份，建議立即匯出！" 
+              : "💡 資料已持久化儲存在本地瀏覽器快取。"}
           </div>
           
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
@@ -532,8 +564,10 @@ export default function App() {
                 fontSize: "0.75rem",
                 justifyContent: "center",
                 gap: "4px",
-                borderColor: "rgba(0,0,0,0.1)",
-                color: "var(--text-main)"
+                borderColor: needsBackupReminder ? "var(--diff-c-plus)" : "rgba(0,0,0,0.1)",
+                color: needsBackupReminder ? "var(--diff-c-plus)" : "var(--text-main)",
+                boxShadow: needsBackupReminder ? "0 0 8px rgba(214, 40, 40, 0.2)" : "none",
+                fontWeight: needsBackupReminder ? "700" : "500"
               }}
               title="將完登紀錄與相簿下載成 JSON 備份檔"
             >

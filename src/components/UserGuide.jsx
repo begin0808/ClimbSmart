@@ -244,6 +244,34 @@ export default function UserGuide() {
             </ul>
           </div>
 
+          <hr style={{ border: "none", borderTop: "1px dashed rgba(0,0,0,0.06)" }} />
+
+          <div>
+            <h4 style={{ fontWeight: "700", fontSize: "0.95rem", color: "var(--primary)", marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
+              <ShieldAlert size={16} /> Q5. 資料存在手機本地會不會因瀏覽器清理或空間不足而遺失？如何預防？有沒有自動備份？
+            </h4>
+            <p style={{ marginBottom: "8px" }}>
+              **理論上確實有可能**。在以下特定情況下，手機瀏覽器可能會清除您的本地資料：
+            </p>
+            <ul style={{ paddingLeft: "20px", marginBottom: "8px" }}>
+              <li><b>系統儲存空間極度不足</b>：當手機內部空間幾乎全滿時，iOS 或 Android 系統會自動清理瀏覽器快取與離線資料庫（包括 LocalStorage 與 IndexedDB）以維持系統正常運作。</li>
+              <li><b>iOS Safari 7 天未開啟自動清理機制</b>：若使用一般網頁模式瀏覽，且超過 7 天未開啟該網址，iOS 的隱私與防垃圾機制可能會將其 IndexedDB 刪除。</li>
+              <li><b>手動清除瀏覽紀錄</b>：使用者在設定中清除瀏覽器快取與網站資料，或在無痕/私密瀏覽模式下關閉分頁。</li>
+            </ul>
+            <p style={{ marginBottom: "8px" }}>
+              **本專案目前已實現的預防與保護機制**：
+            </p>
+            <ul style={{ paddingLeft: "20px", marginBottom: "8px" }}>
+              <li><b>持久化儲存請求 (Persistent Storage)</b>：程式在啟動時會自動調用 `navigator.storage.persist()` 向系統申請「永久保留權限」。一旦核准，除非您手動清除，否則瀏覽器在空間不足時**絕對不會**自動刪除您的資料。</li>
+              <li><b>強烈建議「安裝為 PWA 離線 APP」</b>：在手機瀏覽器點擊分享或選單，選擇「加入主畫面」。安裝為 PWA 後，系統會將本站視為正式 App，<b>iOS 的 7 天自動清理機制會完全失效</b>，資料保存穩定度等同手機原生 APP。</li>
+              <li><b>30 天定期備份提醒</b>：如果系統偵測到您有紀錄且超過 30 天未匯出備份，側邊欄左下角的「匯出」按鈕會亮起紅色呼吸燈，提醒您下載 JSON 備份檔。</li>
+            </ul>
+            <p>
+              <b>關於定期自動備份的規劃：</b><br />
+              為了嚴格遵守「100% 本地隱私、不上傳本站伺服器」的承諾，本站無法替您在後端自動備份。但我們正規劃加入<b>「個人雲端同步」</b>功能，未來您可以授權並連接您自己的 <b>Google Drive</b>、<b>Dropbox</b> 或 <b>WebDAV (如個人 NAS)</b>，由前端程式直接、安全地在背景將備份存入您個人的雲端空間，實現零隱私風險的自動備份。
+            </p>
+          </div>
+
         </div>
       </div>
 

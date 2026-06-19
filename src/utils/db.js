@@ -470,3 +470,41 @@ export async function getMapTileCount() {
   }
 }
 
+// 請求瀏覽器持久化儲存 (Persistent Storage)，防止因低磁碟空間被自動清除快取
+export async function requestPersistentStorage() {
+  if (navigator.storage && navigator.storage.persist) {
+    try {
+      const isPersisted = await navigator.storage.persisted();
+      if (!isPersisted) {
+        const persisted = await navigator.storage.persist();
+        console.log(`ClimbSmart: Persistent storage permission: ${persisted}`);
+        return persisted;
+      }
+      return true;
+    } catch (e) {
+      console.warn("ClimbSmart: Persistent storage request failed:", e);
+      return false;
+    }
+  }
+  return false;
+}
+
+// 獲取當前瀏覽器儲存估計
+export async function getStorageEstimate() {
+  if (navigator.storage && navigator.storage.estimate) {
+    try {
+      const estimate = await navigator.storage.estimate();
+      return {
+        usage: estimate.usage || 0, // 單位: Bytes
+        quota: estimate.quota || 0, // 單位: Bytes
+        percentage: estimate.quota ? ((estimate.usage / estimate.quota) * 100).toFixed(2) : "0.00"
+      };
+    } catch (e) {
+      console.warn("ClimbSmart: Storage estimate failed:", e);
+      return null;
+    }
+  }
+  return null;
+}
+
+
