@@ -301,6 +301,9 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
 
       mapInstanceRef.current = map;
 
+      // 移除 Leaflet 自我宣傳前綴（保留各圖層的資料來源版權標示即可）
+      map.attributionControl.setPrefix(false);
+
       // 圖層 A: OpenTopoMap
       const topoTiles = createOfflineTileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
         maxZoom: 17,
@@ -375,7 +378,7 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
         "衛星影像地圖": satelliteTiles,
         "臺灣登山魯地圖": rudyTiles
       };
-      L.control.layers(baseMaps, null, { position: "bottomleft" }).addTo(map);
+      L.control.layers(baseMaps, null, { position: "topleft" }).addTo(map);
       L.control.zoom({ position: "topright" }).addTo(map);
 
       const markersLayer = L.layerGroup().addTo(map);

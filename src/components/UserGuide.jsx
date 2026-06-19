@@ -278,7 +278,7 @@ export default function UserGuide() {
           <h3 style={{ fontWeight: "800", fontSize: "1.1rem", margin: 0 }}>🐛 功能回報與社群聯絡</h3>
         </div>
         <p style={{ fontSize: "0.85rem", color: "var(--text-main)", lineHeight: "1.5", marginBottom: "16px" }}>
-          本平台為開源公益專案，旨在維護山友登山安全。如果您在使用中發現 Bug 或有建議，歡迎隨時與我們聯絡：
+          本平台為免費開源專案，旨在維護山友登山安全。如果您在使用中發現 Bug 或有建議，歡迎隨時與我們聯絡：
         </p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
           <a
