@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Plus, Trash2, RotateCcw, AlertTriangle, CheckSquare, Dumbbell, ShieldAlert, Printer, Milestone, ExternalLink, CloudSun } from "lucide-react";
+import { Plus, Trash2, RotateCcw, AlertTriangle, CheckSquare, Dumbbell, ShieldAlert, Printer, Milestone, ExternalLink, CloudSun, Download, Upload, Settings } from "lucide-react";
 import { ROUTE_TEMPLATES, PEAKS } from "../data/peaks";
 import { MINI_PEAKS } from "../data/miniPeaks";
-import { loadGearPlans, saveGearPlan } from "../utils/db";
+import { loadGearPlans, saveGearPlans } from "../utils/db";
 
 const CATEGORIES = [
   { id: "clothing", name: "衣物與穿著", color: "#4ea8de" },
@@ -24,9 +24,24 @@ const getWeatherDisplay = (code) => {
 };
 
 export default function GearPlanner({ dataset, onLocateOnMap }) {
-  const [selectedRouteId, setSelectedRouteId] = useState(ROUTE_TEMPLATES[0].id);
-  const [gears, setGears] = useState([]);
-  
+  // 多組裝備狀態
+  const [plansData, setPlansData] = useState({ plans: [], activePlanId: null });
+  const [isEditingProps, setIsEditingProps] = useState(false);
+  const [isCreatingPlan, setIsCreatingPlan] = useState(false);
+
+  // 編輯屬性狀態
+  const [editName, setEditName] = useState("");
+  const [editDays, setEditDays] = useState(1);
+  const [editBaseLimit, setEditBaseLimit] = useState(6000);
+  const [editTotalLimit, setEditTotalLimit] = useState(12000);
+
+  // 建立清單狀態
+  const [createName, setCreateName] = useState("");
+  const [createDays, setCreateDays] = useState(1);
+  const [createBaseLimit, setCreateBaseLimit] = useState(6000);
+  const [createTotalLimit, setCreateTotalLimit] = useState(12000);
+  const [createTemplate, setCreateTemplate] = useState("blank");
+
   // 新增裝備表單狀態
   const [newItemName, setNewItemName] = useState("");
   const [newItemWeight, setNewItemWeight] = useState(0);
@@ -44,26 +59,54 @@ export default function GearPlanner({ dataset, onLocateOnMap }) {
   const [isOfflineWeather, setIsOfflineWeather] = useState(false);
   const [selectedWeatherLoc, setSelectedWeatherLoc] = useState(null);
 
-  // 載入路線裝備
+  // 初始化載入裝備
   useEffect(() => {
-    const savedPlans = loadGearPlans();
-    if (savedPlans[selectedRouteId]) {
-      setGears(savedPlans[selectedRouteId]);
+    const data = loadGearPlans();
+    if (!data.plans || data.plans.length === 0) {
+      const defaultPlans = ROUTE_TEMPLATES.map((template) => ({
+        id: `template_${template.id}`,
+        name: `${template.name} (預設)`,
+        routeId: template.id,
+        days: template.days,
+        baseWeightLimit: template.baseWeightLimit,
+        totalWeightLimit: template.totalWeightLimit,
+        gears: template.gears
+      }));
+      const initialData = {
+        plans: defaultPlans,
+        activePlanId: defaultPlans[0].id
+      };
+      saveGearPlans(initialData);
+      setPlansData(initialData);
     } else {
-      const template = ROUTE_TEMPLATES.find((r) => r.id === selectedRouteId);
-      setGears(template ? template.gears : []);
+      setPlansData(data);
     }
-  }, [selectedRouteId]);
+  }, []);
+
+  const activePlan = useMemo(() => {
+    if (!plansData.plans || plansData.plans.length === 0) return null;
+    return plansData.plans.find((p) => p.id === plansData.activePlanId) || plansData.plans[0];
+  }, [plansData]);
+
+  const gears = useMemo(() => {
+    return activePlan ? activePlan.gears : [];
+  }, [activePlan]);
+
+  const currentRoute = useMemo(() => {
+    if (!activePlan) return null;
+    return ROUTE_TEMPLATES.find((r) => r.id === activePlan.routeId) || null;
+  }, [activePlan]);
 
   // 儲存裝備
   const updateAndSaveGears = (newGears) => {
-    setGears(newGears);
-    saveGearPlan(selectedRouteId, newGears);
+    if (!activePlan) return;
+    const updatedPlans = plansData.plans.map((p) =>
+      p.id === activePlan.id ? { ...p, gears: newGears } : p
+    );
+    const nextData = { ...plansData, plans: updatedPlans };
+    setPlansData(nextData);
+    saveGearPlans(nextData);
   };
-
-  const currentRoute = useMemo(() => {
-    return ROUTE_TEMPLATES.find((r) => r.id === selectedRouteId) || ROUTE_TEMPLATES[0];
-  }, [selectedRouteId]);
 
   // 當路線切換時，預設將天氣定位點設為該路線的登山口
   useEffect(() => {
@@ -76,11 +119,18 @@ export default function GearPlanner({ dataset, onLocateOnMap }) {
         id: `waypoint:0`
       });
     } else {
-      setSelectedWeatherLoc(null);
+      // 若是自訂清單（無路線模板），預設抓玉山主峰氣象
+      const defaultPeak = dataset === "mini" ? MINI_PEAKS[0] : PEAKS[0];
+      setSelectedWeatherLoc({
+        name: defaultPeak.name,
+        lat: defaultPeak.lat,
+        lng: defaultPeak.lng,
+        id: `peak:${defaultPeak.id}`
+      });
     }
-  }, [currentRoute]);
+  }, [currentRoute, dataset]);
 
-  // 載入與快取氣象預報（綁定 selectedWeatherLoc）
+  // 載入與快取氣象預報
   useEffect(() => {
     if (!selectedWeatherLoc || !selectedWeatherLoc.lat || !selectedWeatherLoc.lng) {
       setWeatherData(null);
@@ -172,7 +222,7 @@ export default function GearPlanner({ dataset, onLocateOnMap }) {
     if (!val) return;
 
     const [type, idStr] = val.split(":");
-    if (type === "waypoint") {
+    if (type === "waypoint" && currentRoute) {
       const idx = parseInt(idStr, 10);
       const waypoint = currentRoute.elevationProfile?.[idx];
       if (waypoint) {
@@ -237,8 +287,13 @@ export default function GearPlanner({ dataset, onLocateOnMap }) {
 
   // 重設為模板
   const handleResetToTemplate = () => {
+    if (!activePlan) return;
+    if (!activePlan.routeId) {
+      alert("此清單為自訂路線清單，無對應的預設模板。");
+      return;
+    }
     if (window.confirm("確定要重設裝備清單為預設模板嗎？這會覆寫您目前的自訂裝備。")) {
-      const template = ROUTE_TEMPLATES.find((r) => r.id === selectedRouteId);
+      const template = ROUTE_TEMPLATES.find((r) => r.id === activePlan.routeId);
       updateAndSaveGears(template ? template.gears : []);
     }
   };
@@ -264,6 +319,133 @@ export default function GearPlanner({ dataset, onLocateOnMap }) {
   // 觸發列印模式
   const handlePrint = () => {
     window.print();
+  };
+
+  // 新增/建立新清單
+  const handleCreatePlan = (e) => {
+    e.preventDefault();
+    if (!createName.trim()) return;
+
+    let initialGears = [];
+    let routeId = null;
+
+    if (createTemplate !== "blank") {
+      const tmpl = ROUTE_TEMPLATES.find((r) => r.id === createTemplate);
+      if (tmpl) {
+        initialGears = tmpl.gears.map((g) => ({ ...g, id: `${g.id}_copy_${Date.now()}` }));
+        routeId = tmpl.id;
+      }
+    }
+
+    const newPlan = {
+      id: `plan_${Date.now()}`,
+      name: createName.trim(),
+      routeId,
+      days: createDays,
+      baseWeightLimit: createBaseLimit,
+      totalWeightLimit: createTotalLimit,
+      gears: initialGears
+    };
+
+    const nextData = {
+      plans: [...plansData.plans, newPlan],
+      activePlanId: newPlan.id
+    };
+    setPlansData(nextData);
+    saveGearPlans(nextData);
+    setIsCreatingPlan(false);
+    setCreateName("");
+  };
+
+  // 儲存編輯屬性
+  const handleSaveProperties = (e) => {
+    e.preventDefault();
+    if (!activePlan || !editName.trim()) return;
+
+    const updatedPlans = plansData.plans.map((p) =>
+      p.id === activePlan.id
+        ? {
+            ...p,
+            name: editName.trim(),
+            days: editDays,
+            baseWeightLimit: editBaseLimit,
+            totalWeightLimit: editTotalLimit
+          }
+        : p
+    );
+
+    const nextData = { ...plansData, plans: updatedPlans };
+    setPlansData(nextData);
+    saveGearPlans(nextData);
+    setIsEditingProps(false);
+  };
+
+  // 刪除目前清單
+  const handleDeletePlan = () => {
+    if (!activePlan) return;
+    if (plansData.plans.length <= 1) {
+      alert("請至少保留一組裝備清單，無法刪除！");
+      return;
+    }
+
+    if (window.confirm(`確定要刪除「${activePlan.name}」裝備清單嗎？這將無法復原。`)) {
+      const remainingPlans = plansData.plans.filter((p) => p.id !== activePlan.id);
+      const nextData = {
+        plans: remainingPlans,
+        activePlanId: remainingPlans[0].id
+      };
+      setPlansData(nextData);
+      saveGearPlans(nextData);
+    }
+  };
+
+  // 分享導出（單一清單）
+  const handleExportSinglePlan = () => {
+    if (!activePlan) return;
+    const blob = new Blob([JSON.stringify(activePlan, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${activePlan.name}_gear_list.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // 分享導入（單一清單）
+  const handleImportSinglePlan = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const imported = JSON.parse(event.target.result);
+        if (!imported.name || !Array.isArray(imported.gears)) {
+          throw new Error("Invalid gear list structure");
+        }
+
+        const newPlan = {
+          ...imported,
+          id: `plan_imported_${Date.now()}`,
+          name: `${imported.name} (匯入)`
+        };
+
+        const nextData = {
+          plans: [...plansData.plans, newPlan],
+          activePlanId: newPlan.id
+        };
+
+        setPlansData(nextData);
+        saveGearPlans(nextData);
+        alert(`成功導入裝備清單：${imported.name}！`);
+      } catch (err) {
+        alert("導入失敗：檔案格式不正確。請確認為本系統導出的單一裝備清單 JSON 檔。");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = ""; // 清空 input
   };
 
   // ----------------------------------------------------
@@ -325,52 +507,303 @@ export default function GearPlanner({ dataset, onLocateOnMap }) {
       {/* 列印專用抬頭 (僅在列印時顯示，被 CSS 控制) */}
       <div className="gear-checklist-print-header" style={{ display: "none" }}>
         <h2>智行百岳登山裝備確認清單</h2>
-        <p style={{ fontSize: "1rem", marginTop: "5px" }}>路線：{currentRoute.name} &bull; 天數：{currentRoute.days} 天</p>
+        {activePlan && (
+          <p style={{ fontSize: "1rem", marginTop: "5px" }}>路線：{activePlan.name} &bull; 天數：{activePlan.days} 天</p>
+        )}
         <p style={{ fontSize: "0.9rem", color: "#444" }}>
           裝備基礎重量：{weightStats.baseKg} kg &bull; 總重量：{weightStats.totalKg} kg
         </p>
       </div>
 
       {/* 頂部路線選擇列 */}
-      <div className="mist-card hide-on-print" style={{ padding: "20px", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "16px" }}>
-        <div>
-          <h3 style={{ fontSize: "1.2rem", fontWeight: "700", color: "var(--primary)" }}>山系裝備規劃器</h3>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: "2px" }}>
-            依據不同百岳路線規劃裝備，動態計算您的背包負重。
-          </p>
-        </div>
-
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
-          <div style={{ display: "flex", gap: "6px" }}>
-            {ROUTE_TEMPLATES.map((route) => (
-              <button
-                key={route.id}
-                onClick={() => setSelectedRouteId(route.id)}
-                className={selectedRouteId === route.id ? "btn-primary" : "btn-secondary"}
-                style={{ padding: "6px 14px", fontSize: "0.85rem" }}
-              >
-                {route.name}
-              </button>
-            ))}
+      <div className="mist-card hide-on-print" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "16px" }}>
+          <div>
+            <h3 style={{ fontSize: "1.2rem", fontWeight: "700", color: "var(--primary)" }}>山系裝備規劃器</h3>
+            <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: "2px" }}>
+              建立並管理多組背包負重清單，可隨時匯出分享給隊友。
+            </p>
           </div>
 
-          <button
-            onClick={handlePrint}
-            className="btn-secondary"
-            style={{
-              padding: "7px 12px",
-              fontSize: "0.85rem",
-              borderColor: "var(--primary-light)",
-              color: "var(--primary-light)",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px"
-            }}
-            title="列印或匯出 PDF 裝備確認表"
-          >
-            <Printer size={16} /> 匯出 PDF / 列印
-          </button>
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+            {/* 下拉選擇清單 */}
+            <select
+              value={plansData.activePlanId || ""}
+              onChange={(e) => {
+                const nextData = { ...plansData, activePlanId: e.target.value };
+                setPlansData(nextData);
+                saveGearPlans(nextData);
+              }}
+              style={{
+                padding: "8px 12px",
+                borderRadius: "8px",
+                border: "1.5px solid var(--border-glass)",
+                background: "rgba(255,255,255,0.8)",
+                color: "var(--text-main)",
+                fontSize: "0.88rem",
+                fontWeight: "600",
+                cursor: "pointer",
+                outline: "none"
+              }}
+            >
+              {plansData.plans.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} ({p.days}天)
+                </option>
+              ))}
+            </select>
+
+            {/* 功能按鈕群 */}
+            <button
+              onClick={() => {
+                setIsCreatingPlan(true);
+                setIsEditingProps(false);
+              }}
+              className="btn-secondary"
+              style={{ padding: "8px 12px", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "4px" }}
+            >
+              <Plus size={14} /> 新建清單
+            </button>
+
+            <button
+              onClick={() => {
+                if (!activePlan) return;
+                setEditName(activePlan.name);
+                setEditDays(activePlan.days);
+                setEditBaseLimit(activePlan.baseWeightLimit);
+                setEditTotalLimit(activePlan.totalWeightLimit);
+                setIsEditingProps(true);
+                setIsCreatingPlan(false);
+              }}
+              className="btn-secondary"
+              style={{ padding: "8px 12px", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "4px" }}
+            >
+              <Settings size={14} /> 編輯屬性
+            </button>
+
+            <button
+              onClick={handleDeletePlan}
+              className="btn-secondary"
+              style={{ padding: "8px 12px", fontSize: "0.85rem", color: "var(--diff-c-plus)", borderColor: "rgba(214, 40, 40, 0.2)" }}
+              disabled={plansData.plans.length <= 1}
+            >
+              <Trash2 size={14} />
+            </button>
+
+            <button
+              onClick={handleExportSinglePlan}
+              className="btn-secondary"
+              style={{ padding: "8px 12px", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "4px" }}
+              title="匯出此清單"
+            >
+              <Download size={14} /> 匯出清單
+            </button>
+
+            <button
+              onClick={() => document.getElementById("single-import-input").click()}
+              className="btn-secondary"
+              style={{ padding: "8px 12px", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "4px" }}
+              title="匯入清單"
+            >
+              <Upload size={14} /> 匯入清單
+            </button>
+            <input
+              id="single-import-input"
+              type="file"
+              accept=".json"
+              onChange={handleImportSinglePlan}
+              style={{ display: "none" }}
+            />
+
+            <button
+              onClick={handlePrint}
+              className="btn-primary"
+              style={{
+                padding: "8px 12px",
+                fontSize: "0.85rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px"
+              }}
+              title="列印或匯出 PDF 裝備確認表"
+            >
+              <Printer size={16} /> 匯出 PDF / 列印
+            </button>
+          </div>
         </div>
+
+        {/* 建立新清單表單 */}
+        {isCreatingPlan && (
+          <form
+            onSubmit={handleCreatePlan}
+            style={{
+              marginTop: "10px",
+              padding: "16px",
+              background: "rgba(0,0,0,0.02)",
+              borderRadius: "10px",
+              border: "1px dashed var(--border-glass)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px"
+            }}
+          >
+            <div style={{ fontWeight: "700", fontSize: "0.95rem", color: "var(--primary)" }}>建立新背包裝備清單</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: "600" }}>清單名稱</span>
+                <input
+                  type="text"
+                  placeholder="例如：自訂南二段縱走"
+                  value={createName}
+                  onChange={(e) => setCreateName(e.target.value)}
+                  required
+                  style={{ padding: "8px", borderRadius: "6px", border: "1px solid var(--border-glass)", background: "#fff", fontSize: "0.85rem" }}
+                />
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: "600" }}>起點模板 (可複製預設項目)</span>
+                <select
+                  value={createTemplate}
+                  onChange={(e) => setCreateTemplate(e.target.value)}
+                  style={{ padding: "8px", borderRadius: "6px", border: "1px solid var(--border-glass)", background: "#fff", fontSize: "0.85rem" }}
+                >
+                  <option value="blank">空白清單 (不複製任何裝備)</option>
+                  {ROUTE_TEMPLATES.map((tmpl) => (
+                    <option key={tmpl.id} value={tmpl.id}>
+                      複製：{tmpl.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "12px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: "600" }}>天數</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="30"
+                  value={createDays}
+                  onChange={(e) => setCreateDays(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                  style={{ padding: "8px", borderRadius: "6px", border: "1px solid var(--border-glass)", background: "#fff", fontSize: "0.85rem" }}
+                />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: "600" }}>基礎負重上限 (g)</span>
+                <input
+                  type="number"
+                  step="500"
+                  value={createBaseLimit}
+                  onChange={(e) => setCreateBaseLimit(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                  style={{ padding: "8px", borderRadius: "6px", border: "1px solid var(--border-glass)", background: "#fff", fontSize: "0.85rem" }}
+                />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: "600" }}>總負重上限 (g)</span>
+                <input
+                  type="number"
+                  step="500"
+                  value={createTotalLimit}
+                  onChange={(e) => setCreateTotalLimit(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                  style={{ padding: "8px", borderRadius: "6px", border: "1px solid var(--border-glass)", background: "#fff", fontSize: "0.85rem" }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "4px" }}>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setIsCreatingPlan(false)}
+                style={{ padding: "6px 14px", fontSize: "0.8rem" }}
+              >
+                取消
+              </button>
+              <button type="submit" className="btn-primary" style={{ padding: "6px 16px", fontSize: "0.8rem" }}>
+                確認建立
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* 編輯屬性表單 */}
+        {isEditingProps && (
+          <form
+            onSubmit={handleSaveProperties}
+            style={{
+              marginTop: "10px",
+              padding: "16px",
+              background: "rgba(0,0,0,0.02)",
+              borderRadius: "10px",
+              border: "1px dashed var(--border-glass)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px"
+            }}
+          >
+            <div style={{ fontWeight: "700", fontSize: "0.95rem", color: "var(--primary)" }}>編輯清單屬性設定</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: "600" }}>清單名稱</span>
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                required
+                style={{ padding: "8px", borderRadius: "6px", border: "1px solid var(--border-glass)", background: "#fff", fontSize: "0.85rem" }}
+              />
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "12px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: "600" }}>天數</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="30"
+                  value={editDays}
+                  onChange={(e) => setEditDays(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                  style={{ padding: "8px", borderRadius: "6px", border: "1px solid var(--border-glass)", background: "#fff", fontSize: "0.85rem" }}
+                />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: "600" }}>基礎負重上限 (g)</span>
+                <input
+                  type="number"
+                  step="500"
+                  value={editBaseLimit}
+                  onChange={(e) => setEditBaseLimit(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                  style={{ padding: "8px", borderRadius: "6px", border: "1px solid var(--border-glass)", background: "#fff", fontSize: "0.85rem" }}
+                />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: "600" }}>總負重上限 (g)</span>
+                <input
+                  type="number"
+                  step="500"
+                  value={editTotalLimit}
+                  onChange={(e) => setEditTotalLimit(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                  style={{ padding: "8px", borderRadius: "6px", border: "1px solid var(--border-glass)", background: "#fff", fontSize: "0.85rem" }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "4px" }}>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setIsEditingProps(false)}
+                style={{ padding: "6px 14px", fontSize: "0.8rem" }}
+              >
+                取消
+              </button>
+              <button type="submit" className="btn-primary" style={{ padding: "6px 16px", fontSize: "0.8rem" }}>
+                儲存屬性
+              </button>
+            </div>
+          </form>
+        )}
       </div>
 
       {/* 主版面 */}
@@ -581,16 +1014,16 @@ export default function GearPlanner({ dataset, onLocateOnMap }) {
                   <div
                     style={{
                       height: "100%",
-                      width: `${Math.min(100, (weightStats.baseG / currentRoute.baseWeightLimit) * 100)}%`,
-                      background: weightStats.baseG > currentRoute.baseWeightLimit ? "var(--diff-c-plus)" : "var(--primary-light)",
+                      width: `${Math.min(100, (weightStats.baseG / (activePlan?.baseWeightLimit || 6000)) * 100)}%`,
+                      background: weightStats.baseG > (activePlan?.baseWeightLimit || 6000) ? "var(--diff-c-plus)" : "var(--primary-light)",
                       borderRadius: "4px",
                       transition: "width 0.4s ease"
                     }}
                   />
                 </div>
                 <div className="hide-on-print" style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px" }}>
-                  <span>建議上限：{(currentRoute.baseWeightLimit / 1000).toFixed(1)} kg</span>
-                  {weightStats.baseG > currentRoute.baseWeightLimit && (
+                  <span>建議上限：{((activePlan?.baseWeightLimit || 6000) / 1000).toFixed(1)} kg</span>
+                  {weightStats.baseG > (activePlan?.baseWeightLimit || 6000) && (
                     <span style={{ color: "var(--diff-c-plus)", fontWeight: "600", display: "flex", alignItems: "center", gap: "2px" }}>
                       <AlertTriangle size={12} /> 超出負擔！
                     </span>
@@ -613,15 +1046,15 @@ export default function GearPlanner({ dataset, onLocateOnMap }) {
                   <div
                     style={{
                       height: "100%",
-                      width: `${Math.min(100, (weightStats.totalG / currentRoute.totalWeightLimit) * 100)}%`,
-                      background: weightStats.totalG > currentRoute.totalWeightLimit ? "var(--diff-c-plus)" : "var(--accent-sky)",
+                      width: `${Math.min(100, (weightStats.totalG / (activePlan?.totalWeightLimit || 12000)) * 100)}%`,
+                      background: weightStats.totalG > (activePlan?.totalWeightLimit || 12000) ? "var(--diff-c-plus)" : "var(--accent-sky)",
                       borderRadius: "4px",
                       transition: "width 0.4s ease"
                     }}
                   />
                 </div>
                 <div className="hide-on-print" style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px" }}>
-                  <span>打包建議上限：{(currentRoute.totalWeightLimit / 1000).toFixed(1)} kg</span>
+                  <span>打包建議上限：{((activePlan?.totalWeightLimit || 12000) / 1000).toFixed(1)} kg</span>
                 </div>
               </div>
             </div>

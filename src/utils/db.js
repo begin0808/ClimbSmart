@@ -177,7 +177,9 @@ export function parseGPX(gpxString) {
       const lat = parseFloat(trkpts[i].getAttribute("lat"));
       const lon = parseFloat(trkpts[i].getAttribute("lon"));
       if (!isNaN(lat) && !isNaN(lon)) {
-        points.push([lat, lon]);
+        const eleNode = trkpts[i].getElementsByTagName("ele")[0];
+        const ele = eleNode ? parseFloat(eleNode.textContent) || 0 : 0;
+        points.push([lat, lon, ele]);
       }
     }
 
@@ -199,22 +201,70 @@ export function parseGPX(gpxString) {
   }
 }
 
-// 讀取裝備清單
+// 讀取裝備清單（多組清單格式）
 export function loadGearPlans() {
   try {
     const data = localStorage.getItem(KEY_GEAR_PLANS);
-    return data ? JSON.parse(data) : {};
+    if (!data) {
+      return { plans: [], activePlanId: null };
+    }
+    const parsed = JSON.parse(data);
+    // 舊資料自動遷移相容
+    if (parsed && !parsed.plans && typeof parsed === "object" && !Array.isArray(parsed)) {
+      const migratedPlans = [];
+      Object.entries(parsed).forEach(([routeId, gears]) => {
+        let name = "舊自訂清單";
+        let days = 1;
+        let baseWeightLimit = 6000;
+        let totalWeightLimit = 12000;
+        if (routeId === "hehuan") {
+          name = "合歡群峰一日輕裝 (舊自訂)";
+          days = 1;
+          baseWeightLimit = 3000;
+          totalWeightLimit = 6000;
+        } else if (routeId === "yushan") {
+          name = "玉山主峰兩天一夜 (舊自訂)";
+          days = 2;
+          baseWeightLimit = 6000;
+          totalWeightLimit = 10000;
+        } else if (routeId === "qilai") {
+          name = "奇萊主北三天兩夜 (舊自訂)";
+          days = 3;
+          baseWeightLimit = 12000;
+          totalWeightLimit = 18000;
+        }
+        migratedPlans.push({
+          id: `plan_${routeId}_migrated_${Date.now()}`,
+          name,
+          routeId,
+          days,
+          baseWeightLimit,
+          totalWeightLimit,
+          gears
+        });
+      });
+      const initialData = {
+        plans: migratedPlans,
+        activePlanId: migratedPlans.length > 0 ? migratedPlans[0].id : null
+      };
+      localStorage.setItem(KEY_GEAR_PLANS, JSON.stringify(initialData));
+      return initialData;
+    }
+    return parsed;
   } catch (e) {
     console.error("Failed to load gear plans:", e);
-    return {};
+    return { plans: [], activePlanId: null };
   }
 }
 
-// 儲存某條路線的裝備清單
+// 儲存裝備清單
+export function saveGearPlans(plansData) {
+  localStorage.setItem(KEY_GEAR_PLANS, JSON.stringify(plansData));
+}
+
+// 保留此空函式或包裝以防有其他模組殘留引用
 export function saveGearPlan(routeId, planData) {
-  const plans = loadGearPlans();
-  plans[routeId] = planData;
-  localStorage.setItem(KEY_GEAR_PLANS, JSON.stringify(plans));
+  console.warn("saveGearPlan is deprecated, use saveGearPlans instead");
 }
 
 // ----------------------------------------------------

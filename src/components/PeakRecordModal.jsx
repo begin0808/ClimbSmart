@@ -9,7 +9,8 @@ export default function PeakRecordModal({
   initialRecord,
   initialPhoto,
   onSave,
-  onDelete
+  onDelete,
+  onOpenLightbox
 }) {
   const [activeTab, setActiveTab] = useState("profile"); // profile, record
   const [date, setDate] = useState("");
@@ -369,7 +370,8 @@ export default function PeakRecordModal({
 
                 <div
                   className="photo-uploader"
-                  onClick={() => document.getElementById("photo-input").click()}
+                  style={photo ? { padding: 0, cursor: "default", background: "none", border: "none" } : {}}
+                  onClick={photo ? undefined : () => document.getElementById("photo-input").click()}
                 >
                   <input
                     id="photo-input"
@@ -380,7 +382,7 @@ export default function PeakRecordModal({
                   />
 
                   {isCompressing ? (
-                    <div style={{ textAlign: "center", color: "var(--text-muted)" }}>
+                    <div style={{ textAlign: "center", color: "var(--text-muted)", padding: "20px" }}>
                       <div style={{
                         width: "24px",
                         height: "24px",
@@ -393,8 +395,36 @@ export default function PeakRecordModal({
                       <span>圖片處理中...</span>
                     </div>
                   ) : photo ? (
-                    <>
-                      <img src={photo} alt="登頂照片" className="photo-preview" />
+                    <div
+                      style={{
+                        position: "relative",
+                        borderRadius: "10px",
+                        overflow: "hidden",
+                        border: "1.5px solid var(--border-glass)",
+                        cursor: "pointer",
+                        height: "200px",
+                        width: "100%"
+                      }}
+                      onClick={() => onOpenLightbox(peak.id)}
+                    >
+                      <img src={photo} alt="登頂照片" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          background: "rgba(0,0,0,0.5)",
+                          color: "white",
+                          fontSize: "0.75rem",
+                          padding: "6px 0",
+                          textAlign: "center",
+                          fontWeight: "600",
+                          backdropFilter: "blur(4px)"
+                        }}
+                      >
+                        🔎 點擊開啟全螢幕相簿燈箱
+                      </div>
                       <div
                         style={{
                           position: "absolute",
@@ -403,7 +433,28 @@ export default function PeakRecordModal({
                           display: "flex",
                           gap: "8px"
                         }}
+                        onClick={(e) => e.stopPropagation()} // 避免點擊按鈕時觸發燈箱
                       >
+                        <button
+                          type="button"
+                          onClick={() => document.getElementById("photo-input").click()}
+                          style={{
+                            background: "rgba(0, 0, 0, 0.75)",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "50%",
+                            width: "32px",
+                            height: "32px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            cursor: "pointer",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
+                          }}
+                          title="更換相片"
+                        >
+                          <Camera size={14} />
+                        </button>
                         <button
                           type="button"
                           onClick={handleRemovePhoto}
@@ -425,7 +476,7 @@ export default function PeakRecordModal({
                           <Trash2 size={14} />
                         </button>
                       </div>
-                    </>
+                    </div>
                   ) : (
                     <div style={{ textAlign: "center", color: "var(--text-muted)", padding: "20px" }}>
                       <Camera size={32} style={{ margin: "0 auto 8px", opacity: 0.6, color: "var(--primary-light)" }} />

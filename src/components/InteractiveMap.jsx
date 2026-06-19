@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Compass, ZoomIn, ZoomOut, CheckCircle2, Circle, Eye, MapPin, Database, Trash2, DownloadCloud, XCircle } from "lucide-react";
+import { Compass, ZoomIn, ZoomOut, CheckCircle2, Circle, Eye, MapPin, Database, Trash2, DownloadCloud, XCircle, ChevronDown, ChevronUp } from "lucide-react";
 import L from "leaflet";
 import { getMapTile, saveMapTile, clearMapTiles, getMapTileCount } from "../utils/db";
+import RouteElevationProfile from "./RouteElevationProfile";
 
 // Leaflet 標記自訂樣式生成 - 亮橘紅點（已爬）與珍珠白黑框點（未爬），高山地圖上對比鮮明
 const createMarkerIcon = (isClimbed, difficulty) => {
@@ -133,6 +134,9 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
   
   // 被聚焦/定位的百岳狀態
   const [focusedPeakId, setFocusedPeakId] = useState(null);
+  const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [isProfileCollapsed, setIsProfileCollapsed] = useState(() => window.innerWidth < 768);
+  const hoverMarkerRef = useRef(null);
 
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -141,6 +145,15 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
   const activeLayerRef = useRef(null); // 目前使用中的底圖層（供區域下載取得 URL 模板）
 
   const [cacheCount, setCacheCount] = useState(0);
+
+  const focusedPeakRecord = useMemo(() => {
+    return focusedPeakId ? records[focusedPeakId] : null;
+  }, [focusedPeakId, records]);
+
+  const focusedPeakName = useMemo(() => {
+    const peak = peaks.find((p) => p.id === focusedPeakId);
+    return peak ? peak.name : "";
+  }, [peaks, focusedPeakId]);
 
   // 主動式區域下載狀態
   const [detailExtra, setDetailExtra] = useState(2); // 在目前縮放層級之上額外下載幾層細節
@@ -154,6 +167,8 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
   useEffect(() => {
     setSelectedRange("all");
     setSelectedDifficulty("all");
+    setFocusedPeakId(null);
+    setHoveredIndex(null);
   }, [dataset]);
 
   const updateCacheCount = async () => {
@@ -393,6 +408,45 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
     };
   }, []);
 
+  // ====== 處理剖面圖 Hover 的 Pulsing Marker 連動 ======
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    if (hoverMarkerRef.current) {
+      hoverMarkerRef.current.remove();
+      hoverMarkerRef.current = null;
+    }
+
+    if (hoveredIndex !== null && focusedPeakRecord && focusedPeakRecord.gpxTrack && focusedPeakRecord.gpxTrack[hoveredIndex]) {
+      const pt = focusedPeakRecord.gpxTrack[hoveredIndex];
+      
+      const pulseIcon = L.divIcon({
+        className: "",
+        html: `
+          <div style="position: relative; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+            <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 3px solid #ff5400; animation: leaflet-pulse 1.5s infinite ease-in-out;"></div>
+            <div style="width: 10px; height: 10px; border-radius: 50%; background-color: #ff5400; border: 2px solid white; box-shadow: 0 0 6px #ff5400;"></div>
+          </div>
+        `,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      });
+
+      hoverMarkerRef.current = L.marker([pt[0], pt[1]], { icon: pulseIcon }).addTo(map);
+    }
+  }, [hoveredIndex, focusedPeakRecord]);
+
+  // ====== 當地圖容器大小因剖面圖展開/收合改變時，重新計算地圖尺寸 ======
+  useEffect(() => {
+    if (mapInstanceRef.current) {
+      const timer = setTimeout(() => {
+        mapInstanceRef.current.invalidateSize();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isProfileCollapsed, focusedPeakRecord]);
+
   // 3. 當百岳資料、完登狀態、聚焦山頭或篩選器改變時，重新繪製標記與軌跡
   useEffect(() => {
     if (!mapInstanceRef.current || !markersLayerRef.current) return;
@@ -430,6 +484,26 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
             lineJoin: "round"
           });
           polyline.addTo(markersLayer);
+
+          // 雙向連動：滑鼠滑過地圖上的軌跡線時，尋找最近點以同步高度圖
+          polyline.on("mousemove", (e) => {
+            const mouseLatLng = e.latlng;
+            let minDist = Infinity;
+            let closestIdx = 0;
+
+            record.gpxTrack.forEach((pt, idx) => {
+              const d = Math.hypot(pt[0] - mouseLatLng.lat, pt[1] - mouseLatLng.lng);
+              if (d < minDist) {
+                minDist = d;
+                closestIdx = idx;
+              }
+            });
+            setHoveredIndex(closestIdx);
+          });
+
+          polyline.on("mouseout", () => {
+            setHoveredIndex(null);
+          });
           
           // 自動縮放到軌跡範圍
           try {
@@ -467,6 +541,7 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
 
       // 點擊事件
       marker.on("click", () => {
+        setFocusedPeakId(peak.id);
         onOpenRecord(peak);
       });
 
@@ -593,14 +668,85 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
         <div
           className="mist-card"
           style={{
-            minHeight: "580px",
-            height: "100%",
+            height: "580px",
+            display: "flex",
+            flexDirection: "column",
             position: "relative",
             overflow: "hidden",
             zIndex: 1
           }}
         >
-          <div ref={mapRef} style={{ width: "100%", height: "580px" }} />
+          <div
+            ref={mapRef}
+            style={{
+              width: "100%",
+              height: focusedPeakRecord?.gpxTrack?.length > 0 
+                ? (isProfileCollapsed ? "530px" : "380px") 
+                : "580px",
+              transition: "height 0.3s ease",
+              flexShrink: 0
+            }}
+          />
+
+          {/* 高度剖面面板 */}
+          {focusedPeakRecord?.gpxTrack && focusedPeakRecord.gpxTrack.length > 0 && (
+            <div
+              style={{
+                borderTop: "1.5px solid var(--border-glass)",
+                padding: isProfileCollapsed ? "8px 16px" : "12px 16px",
+                background: "var(--inset-bg)",
+                display: "flex",
+                flexDirection: "column",
+                gap: isProfileCollapsed ? "0px" : "8px",
+                flex: 1,
+                overflow: "hidden",
+                boxSizing: "border-box"
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ fontSize: "0.85rem", fontWeight: "700", color: "var(--text-main)" }}>
+                    ⛰️ {focusedPeakName} 路線高度剖面
+                  </span>
+                  <span style={{ fontSize: "0.68rem", background: "rgba(0,119,182,0.12)", color: "#0077b6", padding: "1px 5px", borderRadius: "3px", fontWeight: "600" }}>
+                    GPX 軌跡連動
+                  </span>
+                </div>
+                <button
+                  onClick={() => setIsProfileCollapsed(!isProfileCollapsed)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "var(--primary-light)",
+                    fontSize: "0.78rem",
+                    cursor: "pointer",
+                    fontWeight: "600",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "2px",
+                    padding: "2px 6px",
+                    borderRadius: "4px"
+                  }}
+                  className="eye-btn"
+                >
+                  {isProfileCollapsed ? (
+                    <>展開剖面圖 <ChevronDown size={14} /></>
+                  ) : (
+                    <>收合剖面圖 <ChevronUp size={14} /></>
+                  )}
+                </button>
+              </div>
+              {!isProfileCollapsed && (
+                <div style={{ flex: 1, minHeight: 0 }}>
+                  <RouteElevationProfile
+                    points={focusedPeakRecord.gpxTrack}
+                    hoveredIndex={hoveredIndex}
+                    onHoverPointChange={(idx) => setHoveredIndex(idx)}
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* 側邊圖例與山岳列表 */}

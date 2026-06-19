@@ -38,6 +38,49 @@ const saveChecklist = (list) => {
   localStorage.setItem(CHECKLIST_KEY, JSON.stringify(list));
 };
 
+// WGS84 十進位緯經度轉度分秒格式 (DMS)
+const toDMS = (val, isLat) => {
+  const dir = isLat ? (val >= 0 ? "N" : "S") : (val >= 0 ? "E" : "W");
+  const absolute = Math.abs(val);
+  const degrees = Math.floor(absolute);
+  const minutesNotTruncated = (absolute - degrees) * 60;
+  const minutes = Math.floor(minutesNotTruncated);
+  const seconds = ((minutesNotTruncated - minutes) * 60).toFixed(1);
+  return `${dir} ${degrees}°${minutes}'${seconds}"`;
+};
+
+// WGS84 經緯度投影轉換為台灣 TWD97 二度分帶坐標 (TM2) 數學投影公式
+const wgs84ToTwd97 = (lat, lon) => {
+  const a = 6378137.0;
+  const b = 6356752.314245;
+  const lon0 = 121.0 * Math.PI / 180.0;
+  const k0 = 0.9999;
+  const dx = 250000.0;
+  
+  const e = Math.sqrt(1 - Math.pow(b / a, 2));
+  const e2 = Math.pow(e, 2) / (1 - Math.pow(e, 2));
+  
+  const phi = lat * Math.PI / 180.0;
+  const lambda = lon * Math.PI / 180.0;
+  
+  const nu = a / Math.sqrt(1 - Math.pow(e * Math.sin(phi), 2));
+  const p = lambda - lon0;
+  
+  const s = a * ((1 - Math.pow(e, 2)/4 - 3*Math.pow(e, 4)/64 - 5*Math.pow(e, 6)/256)*phi 
+            - (3*Math.pow(e, 2)/8 + 3*Math.pow(e, 4)/32 + 45*Math.pow(e, 6)/1024)*Math.sin(2*phi)
+            + (15*Math.pow(e, 4)/256 + 45*Math.pow(e, 6)/1024)*Math.sin(4*phi)
+            - (35*Math.pow(e, 6)/3072)*Math.sin(6*phi));
+             
+  const T = Math.pow(Math.tan(phi), 2);
+  const C = e2 * Math.pow(Math.cos(phi), 2);
+  const A = p * Math.cos(phi);
+  
+  const x = k0 * nu * (A + (1 - T + C) * Math.pow(A, 3) / 6.0 + (5 - 18 * T + Math.pow(T, 2) + 72 * C - 58 * e2) * Math.pow(A, 5) / 120.0) + dx;
+  const y = k0 * (s + nu * Math.tan(phi) * (Math.pow(A, 2) / 2.0 + (5 - T + 9 * C + 4 * Math.pow(C, 2)) * Math.pow(A, 4) / 24.0 + (61 - 58 * T + Math.pow(T, 2) + 600 * C - 330 * e2) * Math.pow(A, 6) / 720.0));
+  
+  return { x: Math.round(x), y: Math.round(y) };
+};
+
 export default function EmergencySOS() {
   // ====== 分頁控制 ======
   const [activePanel, setActivePanel] = useState("sos"); // sos | contacts | breadcrumb | checklist
@@ -54,6 +97,7 @@ export default function EmergencySOS() {
   const [soundPlaying, setSoundPlaying] = useState(false);
   const audioContextRef = useRef(null);
   const oscillatorRef = useRef(null);
+  const soundIntervalRef = useRef(null);
 
   // ====== 閃光信號 ======
   const [flashActive, setFlashActive] = useState(false);
@@ -180,8 +224,15 @@ export default function EmergencySOS() {
   // ====================================================
   const speakCoordinates = () => {
     if (!coords || !window.speechSynthesis) return;
-    const fmt = (n) => n.toFixed(5).toString().split("").map(c => c === "." ? "點" : c === "-" ? "負" : c).join(" ");
-    const text = `我的座標，北緯：${fmt(coords.lat)}度。東經：${fmt(coords.lng)}度。${altitude ? `海拔約：${Math.round(altitude)}公尺。` : ""}`;
+    const twd97Coord = wgs84ToTwd97(coords.lat, coords.lng);
+    const formatDMS = (val) => {
+      const abs = Math.abs(val);
+      const d = Math.floor(abs);
+      const m = Math.floor((abs - d) * 60);
+      const s = Math.round((abs - d - m/60) * 3600);
+      return `${d}度 ${m}分 ${s}秒`;
+    };
+    const text = `我的座標為：北緯 ${formatDMS(coords.lat)}。東經 ${formatDMS(coords.lng)}。二度分帶坐標：X：${twd97Coord.x}。Y：${twd97Coord.y}。${altitude ? `海拔約 ${Math.round(altitude)}公尺。` : ""}`;
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "zh-TW"; u.rate = 0.85;
     window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
@@ -189,13 +240,26 @@ export default function EmergencySOS() {
 
   const copyToClipboard = () => {
     if (!coords) return;
-    navigator.clipboard.writeText(`緯度: ${coords.lat.toFixed(6)}, 經度: ${coords.lng.toFixed(6)}${altitude ? `, 海拔: ${Math.round(altitude)}m` : ""}`);
-    alert("座標已複製！");
+    const twd97Coord = wgs84ToTwd97(coords.lat, coords.lng);
+    const dmsLat = toDMS(coords.lat, true);
+    const dmsLng = toDMS(coords.lng, false);
+    const text = `【緊急定位資訊】
+WGS84 (十進位): ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}
+WGS84 (度分秒): ${dmsLat}, ${dmsLng}
+TWD97 (二度分帶): X ${twd97Coord.x}, Y ${twd97Coord.y}
+海拔高度: ${altitude ? `${Math.round(altitude)}m` : "未知"}
+定位精度: ±${Math.round(accuracy || 0)}m
+手機電量: ${batteryLevel}`;
+    navigator.clipboard.writeText(text);
+    alert("完整定位資訊（含雙座標與高度）已複製到剪貼簿！");
   };
 
   const getSMSBody = () => {
     if (!coords) return "";
-    return `【山域緊急求救】我需要救助。GPS：緯度 ${coords.lat.toFixed(6)}, 經度 ${coords.lng.toFixed(6)} ${altitude ? `(海拔約${Math.round(altitude)}m)` : ""} (誤差約${Math.round(accuracy || 0)}m)。電量：${batteryLevel}。`;
+    const twd97Coord = wgs84ToTwd97(coords.lat, coords.lng);
+    const dmsLat = toDMS(coords.lat, true);
+    const dmsLng = toDMS(coords.lng, false);
+    return `【山域緊急求救】我需要救助。GPS座標：WGS84度分秒: ${dmsLat}, ${dmsLng} (十進位: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)})；TWD97二度分帶: X ${twd97Coord.x}, Y ${twd97Coord.y}；海拔約 ${altitude ? `${Math.round(altitude)}m` : "未知"}，誤差約 ${Math.round(accuracy || 0)}m，手機電量：${batteryLevel}。`;
   };
 
   const handleSendSMS = (phoneNum = "112") => {
@@ -209,6 +273,7 @@ export default function EmergencySOS() {
   const toggleSoundAlert = () => {
     if (soundPlaying) {
       if (oscillatorRef.current) { oscillatorRef.current.stop(); oscillatorRef.current.disconnect(); oscillatorRef.current = null; }
+      if (soundIntervalRef.current) { clearInterval(soundIntervalRef.current); soundIntervalRef.current = null; }
       setSoundPlaying(false);
     } else {
       try {
@@ -217,10 +282,24 @@ export default function EmergencySOS() {
         if (ctx.state === "suspended") ctx.resume();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.type = "sine"; osc.frequency.setValueAtTime(2000, ctx.currentTime);
-        gain.gain.setValueAtTime(0.5, ctx.currentTime);
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(2500, ctx.currentTime);
+        gain.gain.setValueAtTime(0, ctx.currentTime);
         osc.connect(gain); gain.connect(ctx.destination); osc.start();
-        oscillatorRef.current = osc; setSoundPlaying(true);
+        oscillatorRef.current = osc;
+        
+        let isBeep = false;
+        soundIntervalRef.current = setInterval(() => {
+          if (isBeep) {
+            gain.gain.setValueAtTime(0, ctx.currentTime);
+          } else {
+            gain.gain.setValueAtTime(0.8, ctx.currentTime);
+            osc.frequency.setValueAtTime(2500 + Math.random() * 100 - 50, ctx.currentTime);
+          }
+          isBeep = !isBeep;
+        }, 500);
+        
+        setSoundPlaying(true);
       } catch { alert("音訊播放失敗！"); }
     }
   };
@@ -365,6 +444,7 @@ export default function EmergencySOS() {
   useEffect(() => {
     return () => {
       if (oscillatorRef.current) { oscillatorRef.current.stop(); oscillatorRef.current.disconnect(); }
+      if (soundIntervalRef.current) clearInterval(soundIntervalRef.current);
       if (flashTimeoutRef.current) clearTimeout(flashTimeoutRef.current);
       if (breadcrumbIntervalRef.current) clearInterval(breadcrumbIntervalRef.current);
       window.removeEventListener("deviceorientation", handleOrientation);
@@ -409,6 +489,10 @@ export default function EmergencySOS() {
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <div style={{ fontFamily: "Outfit", fontSize: "1.1rem", fontWeight: "800", color: "#ff6666" }}>
                 N {coords.lat.toFixed(6)}° &nbsp; E {coords.lng.toFixed(6)}°
+              </div>
+              <div style={{ fontSize: "0.76rem", color: "#ffa3a3", display: "flex", flexDirection: "column", gap: "2px", margin: "4px 0" }}>
+                <div>度分秒: {toDMS(coords.lat, true)} / {toDMS(coords.lng, false)}</div>
+                <div>TWD97: X {wgs84ToTwd97(coords.lat, coords.lng).x}, Y {wgs84ToTwd97(coords.lat, coords.lng).y}</div>
               </div>
               <div style={{ fontSize: "0.75rem", color: "#aa3333" }}>
                 {altitude ? `海拔 ${Math.round(altitude)}m` : ""} &nbsp;|&nbsp; 精度 ±{Math.round(accuracy || 0)}m &nbsp;|&nbsp; 電量 {batteryLevel}
@@ -559,6 +643,23 @@ export default function EmergencySOS() {
                       <span style={{ fontSize: "1.15rem", fontWeight: "800", fontFamily: "Outfit", display: "block", color: "var(--primary)" }}>{coords.lng.toFixed(6)}°</span>
                     </div>
                   </div>
+                  
+                  {/* 雙座標格式顯示 (WGS84 度分秒 & TWD97 二度分帶) */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px", background: "var(--inset-bg)", padding: "10px", borderRadius: "8px", fontSize: "0.78rem", border: "1px solid var(--inset-border)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "4px" }}>
+                      <span style={{ color: "var(--text-muted)", fontWeight: "600" }}>WGS84 度分秒 (DMS):</span>
+                      <span style={{ fontFamily: "monospace", color: "var(--text-main)", fontWeight: "700" }}>
+                        {toDMS(coords.lat, true)} / {toDMS(coords.lng, false)}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "4px" }}>
+                      <span style={{ color: "var(--text-muted)", fontWeight: "600" }}>TWD97 二度分帶 (TM2):</span>
+                      <span style={{ fontFamily: "monospace", color: "var(--text-main)", fontWeight: "700" }}>
+                        X: {wgs84ToTwd97(coords.lat, coords.lng).x}, Y: {wgs84ToTwd97(coords.lat, coords.lng).y}
+                      </span>
+                    </div>
+                  </div>
+
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "6px", fontSize: "0.75rem" }}>
                     <div style={{ padding: "6px", background: "var(--inset-bg)", borderRadius: "6px", textAlign: "center" }}>
                       <div style={{ color: "var(--text-muted)" }}>海拔</div>

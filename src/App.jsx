@@ -20,6 +20,7 @@ import EmergencySOS from "./components/EmergencySOS";
 import Statistics from "./components/Statistics";
 import RouteGuard from "./components/RouteGuard";
 import UserGuide from "./components/UserGuide";
+import PhotoLightbox from "./components/PhotoLightbox";
 
 // 載入圖示
 import { LayoutDashboard, Map, Briefcase, Download, Upload, Mountain, ShieldAlert, Sun, Moon, BarChart3, Route, BookOpen } from "lucide-react";
@@ -102,6 +103,15 @@ export default function App() {
   // 完登彈窗控制
   const [selectedPeak, setSelectedPeak] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // 全域相簿燈箱控制
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [lightboxActivePeakId, setLightboxActivePeakId] = useState(null);
+
+  const handleOpenLightbox = (peakId) => {
+    setLightboxActivePeakId(peakId);
+    setIsLightboxOpen(true);
+  };
 
   // 初始化載入資料
   useEffect(() => {
@@ -741,6 +751,7 @@ export default function App() {
             records={records}
             photos={photos}
             onOpenRecord={handleOpenRecord}
+            onOpenLightbox={handleOpenLightbox}
           />
         )}
 
@@ -783,6 +794,20 @@ export default function App() {
         initialPhoto={selectedPeak ? photos[selectedPeak.id] : null}
         onSave={handleSaveRecord}
         onDelete={handleDeleteRecord}
+        onOpenLightbox={handleOpenLightbox}
+      />
+
+      {/* 全螢幕照片輪播燈箱 */}
+      <PhotoLightbox
+        isOpen={isLightboxOpen}
+        activePeakId={lightboxActivePeakId}
+        onClose={() => {
+          setIsLightboxOpen(false);
+          setLightboxActivePeakId(null);
+        }}
+        peaks={activePeaks}
+        records={records}
+        photos={photos}
       />
 
       {/* 微小響應式 RWD 嵌入樣式 */}

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Search, Filter, Trophy, TrendingUp, Compass, Calendar, Camera, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 
-export default function Dashboard({ peaks, dataset, records, photos, onOpenRecord }) {
+export default function Dashboard({ peaks, dataset, records, photos, onOpenRecord, onOpenLightbox }) {
   const isMini = dataset === "mini";
   // 篩選器與搜尋狀態
   const [searchQuery, setSearchQuery] = useState("");
@@ -115,6 +115,10 @@ export default function Dashboard({ peaks, dataset, records, photos, onOpenRecor
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredPeaks.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredPeaks, currentPage]);
+
+  const photoPeaks = useMemo(() => {
+    return peaks.filter((p) => records[p.id] && photos[p.id]);
+  }, [peaks, records, photos]);
 
   return (
     <div style={{ flex: 1, padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
@@ -232,6 +236,36 @@ export default function Dashboard({ peaks, dataset, records, photos, onOpenRecor
               </div>
             ))}
           </div>
+        </div>
+
+        {/* 完登紀念相簿卡 */}
+        <div className="mist-card" style={{ padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <div>
+            <h3 style={{ fontSize: "0.95rem", fontWeight: "700", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px" }}>
+              <Camera size={16} style={{ color: "var(--primary-light)" }} /> 完登紀念相簿
+            </h3>
+            <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", lineHeight: "1.4", margin: "0" }}>
+              收集您登頂的珍貴瞬間。點擊下方按鈕即可開啟全螢幕輪播相簿。
+            </p>
+            
+            <div style={{ marginTop: "12px", fontSize: "1.1rem", fontWeight: "700", color: "var(--text-main)" }}>
+              已收集：{photoPeaks.length} 張登頂相片
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              if (photoPeaks.length === 0) {
+                alert("您尚未上傳任何登頂照！請在下方點選已完登的山峰卡片，上傳您的登頂紀念相片。");
+              } else {
+                onOpenLightbox(photoPeaks[0].id);
+              }
+            }}
+            className={photoPeaks.length > 0 ? "btn-primary" : "btn-secondary"}
+            style={{ width: "100%", justifyContent: "center", marginTop: "14px", padding: "8px" }}
+          >
+            🖼&nbsp; 瀏覽完登相簿畫廊
+          </button>
         </div>
       </div>
 
