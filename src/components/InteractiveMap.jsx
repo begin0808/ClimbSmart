@@ -384,7 +384,7 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
       });
 
       // 圖層 C: 台灣登山魯地圖
-      const rudyTiles = createOfflineTileLayer("https://tiles.happyman.idv.tw/map/rudy/{z}/{x}/{y}.png", {
+      const rudyTiles = createOfflineTileLayer("https://rs.happyman.idv.tw/map/moi_osm/{z}/{x}/{y}.png", {
         maxZoom: 18,
         attribution: "Rudy Map &copy; 魯地圖登山開源社群",
         className: "map-tile-invertible",
