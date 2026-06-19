@@ -363,6 +363,7 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
       const topoTiles = createOfflineTileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
         maxZoom: 17,
         attribution: "Map style: &copy; OpenTopoMap (CC-BY-SA) | Map data: &copy; OSM contributors",
+        className: "map-tile-invertible",
         onTileCached: () => {
           if (updateCacheCountRef.current) {
             updateCacheCountRef.current();
@@ -374,6 +375,30 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
       const osmTiles = createOfflineTileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: "&copy; OpenStreetMap contributors",
+        className: "map-tile-invertible",
+        onTileCached: () => {
+          if (updateCacheCountRef.current) {
+            updateCacheCountRef.current();
+          }
+        }
+      });
+
+      // 圖層 C: 台灣登山魯地圖
+      const rudyTiles = createOfflineTileLayer("https://tiles.happyman.idv.tw/map/rudy/{z}/{x}/{y}.png", {
+        maxZoom: 18,
+        attribution: "Rudy Map &copy; 魯地圖登山開源社群",
+        className: "map-tile-invertible",
+        onTileCached: () => {
+          if (updateCacheCountRef.current) {
+            updateCacheCountRef.current();
+          }
+        }
+      });
+
+      // 圖層 D: 衛星影像圖
+      const satelliteTiles = createOfflineTileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+        maxZoom: 18,
+        attribution: "Tiles &copy; Esri &mdash; Source: Esri, USDA, USGS, and the GIS User Community",
         onTileCached: () => {
           if (updateCacheCountRef.current) {
             updateCacheCountRef.current();
@@ -391,7 +416,9 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
 
       const baseMaps = {
         "地形等高線圖": topoTiles,
-        "標準道路地圖": osmTiles
+        "標準道路地圖": osmTiles,
+        "台灣登山魯地圖": rudyTiles,
+        "衛星影像地圖": satelliteTiles
       };
       L.control.layers(baseMaps, null, { position: "bottomleft" }).addTo(map);
       L.control.zoom({ position: "topright" }).addTo(map);

@@ -185,7 +185,8 @@ export default function RouteGuard() {
       // 使用與主地圖同款的 OpenTopoMap 底圖（支援離線快取）
       const topoUrl = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png";
       const offlineLayer = createOfflineTileLayer(topoUrl, {
-        maxZoom: 17
+        maxZoom: 17,
+        className: "map-tile-invertible"
       });
       offlineLayer.addTo(map);
 
