@@ -132,8 +132,17 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
   };
   // 使用者手勢觸發鎖定（核准率較分頁自動請求高）
   const handleLockStorage = async () => {
-    await requestPersistentStorage();
+    const granted = await requestPersistentStorage();
     await refreshStorage();
+    if (granted) {
+      alert("✅ 已鎖定！系統已承諾不會自動清除你的離線地圖快取。");
+    } else {
+      alert(
+        "⚠️ 目前瀏覽器尚未核准「持久化保護」。\n\n" +
+        "這是正常的瀏覽器限制——通常要把本站「加入主畫面／安裝為 App」後才會自動獲得保護。\n\n" +
+        "建議：用瀏覽器選單選「加入主畫面」(手機) 或網址列的「安裝」圖示 (桌機)，安裝後再回來查看狀態，多半就會變成「已受保護」。"
+      );
+    }
   };
 
   const updateCacheCountRef = useRef(updateCacheCount);
