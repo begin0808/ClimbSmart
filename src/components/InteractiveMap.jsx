@@ -820,7 +820,8 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
                 {persisted === false && (
                   <>
                     <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>
-                      在瀏覽器分頁中，系統空間不足或重開機時可能自動清除離線地圖。請點下方鎖定；或用瀏覽器「<b>加入主畫面</b>」安裝成 App 後再下載，保護最完整。
+                      在瀏覽器分頁中，系統空間不足或重開機時可能自動清除離線地圖。請點下方鎖定；或用瀏覽器「<b>加入主畫面</b>」安裝成 App 後再下載，保護最完整。<br />
+                      <span style={{ color: "var(--text-muted)", opacity: 0.85 }}>（桌機測試出現此狀態屬正常，實際保護以手機安裝為準。）</span>
                     </p>
                     <button onClick={handleLockStorage} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "8px 12px", borderRadius: "8px", border: "1.5px solid var(--primary)", background: "transparent", color: "var(--primary)", fontSize: "0.8rem", fontWeight: "600", cursor: "pointer" }}>
                       🔒 鎖定離線快取（防止被系統清除）
