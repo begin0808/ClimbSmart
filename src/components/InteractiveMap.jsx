@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Compass, ZoomIn, ZoomOut, CheckCircle2, Circle, Eye, MapPin, Database, Trash2, DownloadCloud, XCircle, ChevronDown, ChevronUp } from "lucide-react";
 import L from "leaflet";
-import { getMapTile, saveMapTile, clearMapTiles, getMapTileCount } from "../utils/db";
+import { getMapTile, saveMapTile, clearMapTiles, getMapTileCount, requestPersistentStorage, getStorageEstimate } from "../utils/db";
 import { createOfflineTileLayer } from "../utils/offlineTileLayer";
 import RouteElevationProfile from "./RouteElevationProfile";
 
@@ -118,6 +118,24 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
     setCacheCount(count);
   };
 
+  // 持久化儲存狀態（快取是否受系統保護、目前用量）
+  const [persisted, setPersisted] = useState(null); // null=未知, true=已受保護, false=未保護
+  const [usageMB, setUsageMB] = useState(null);
+  const refreshStorage = async () => {
+    try {
+      if (navigator.storage && navigator.storage.persisted) {
+        setPersisted(await navigator.storage.persisted());
+      }
+    } catch { /* 略 */ }
+    const est = await getStorageEstimate();
+    if (est) setUsageMB(Math.round((est.usage || 0) / 1048576));
+  };
+  // 使用者手勢觸發鎖定（核准率較分頁自動請求高）
+  const handleLockStorage = async () => {
+    await requestPersistentStorage();
+    await refreshStorage();
+  };
+
   const updateCacheCountRef = useRef(updateCacheCount);
   useEffect(() => {
     updateCacheCountRef.current = updateCacheCount;
@@ -125,6 +143,7 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
 
   useEffect(() => {
     updateCacheCount();
+    refreshStorage();
   }, []);
 
   const handleClearCache = async () => {
@@ -132,6 +151,7 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
     if (success) {
       setCacheCount(0);
       alert("離線地圖快取已清空！");
+      refreshStorage();
     }
   };
 
@@ -166,6 +186,9 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
 
     const template = layer._url;
     const subdomains = layer.options.subdomains || "abc";
+
+    // 下載前先請求持久化儲存（此處由使用者點擊觸發，核准率較高），保護即將下載的圖磚
+    await requestPersistentStorage();
 
     downloadCancelRef.current = false;
     setDownload({ active: true, total: tiles.length, done: 0, failed: 0, cancelled: false });
@@ -205,6 +228,7 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
 
     setDownload((d) => ({ ...d, active: false, done, failed, cancelled: downloadCancelRef.current }));
     updateCacheCount();
+    refreshStorage();
   };
 
   const handleCancelDownload = () => {
@@ -775,6 +799,31 @@ export default function InteractiveMap({ peaks, dataset, records, onOpenRecord, 
               <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: 0, lineHeight: "1.4" }}>
                 有網路時瀏覽過的區域會自動快取為 Blob，可在山區完全無網時離線讀取地形圖。
               </p>
+
+              {/* ===== 持久化儲存狀態 ===== */}
+              <div style={{ borderTop: "1px dashed var(--inset-border)", paddingTop: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: "0.8rem", fontWeight: "700", color: persisted ? "var(--success)" : persisted === false ? "var(--diff-c-plus)" : "var(--text-muted)" }}>
+                    {persisted === null ? "儲存保護：檢查中…" : persisted ? "🔒 離線快取已受保護" : "⚠️ 快取未受保護"}
+                  </span>
+                  {usageMB != null && <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", fontFamily: "Outfit" }}>已用 {usageMB} MB</span>}
+                </div>
+                {persisted === false && (
+                  <>
+                    <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>
+                      在瀏覽器分頁中，系統空間不足或重開機時可能自動清除離線地圖。請點下方鎖定；或用瀏覽器「<b>加入主畫面</b>」安裝成 App 後再下載，保護最完整。
+                    </p>
+                    <button onClick={handleLockStorage} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "8px 12px", borderRadius: "8px", border: "1.5px solid var(--primary)", background: "transparent", color: "var(--primary)", fontSize: "0.8rem", fontWeight: "600", cursor: "pointer" }}>
+                      🔒 鎖定離線快取（防止被系統清除）
+                    </button>
+                  </>
+                )}
+                {persisted === true && (
+                  <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>
+                    系統已承諾不會自動清除你的離線資料（除非你手動清除或解除安裝 App）。
+                  </p>
+                )}
+              </div>
 
               {/* ===== 主動式區域下載 ===== */}
               <div style={{ borderTop: "1px dashed var(--inset-border)", paddingTop: "12px", display: "flex", flexDirection: "column", gap: "10px" }}>
