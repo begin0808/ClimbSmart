@@ -1,80 +1,81 @@
-# 🏔️ 智行百岳 ClimbSmart
+# 🏔️ ClimbSmart 智行百岳
 
-> **臺灣登山規劃與安全守護平台 (Taiwan Alpine Smart Planner & Guard)**
-> 
-> 版本號：`V20260618` | 專案倉庫：[begin0808/ClimbSmart](https://github.com/begin0808/ClimbSmart)
+**English** · [繁體中文](README.zh-TW.md)
 
----
-
-「智行百岳 ClimbSmart」是一個專為臺灣登山愛好者設計的**全方位、本地優先 (Local-First)** 的網頁應用程式 (PWA)。它整合了百岳與小百岳完登打卡相簿、裝備負重分析、離線 GPX 航跡偏移警示、離線野外求救坐標轉換，以及動態高山天氣預報，致力於成為您登山行前規劃與山上安全守護的得力助手。
-
----
-
-## 🌟 核心功能特點
-
-*   **🏆 百岳與小百岳完登儀表板**
-    *   收錄全台 100 座百岳及 100 座小百岳的經緯度、海拔高度、山脈、難度與科普小百科。
-    *   支援記錄登頂日期、上傳個人登頂合照與心得，並生成精美的完登進度環。
-    *   一鍵備份匯出所有的打卡紀錄與相簿（`.json`），保護數據不遺失。
-*   **🗺️ 互動式等高線與衛星地圖**
-    *   在互動地圖上直觀標記所有山峰的位置，支援篩選與搜尋。
-    *   「平滑飛越定位」功能，在儀表板點擊即可瞬間聚焦山頭位置。
-*   **🎒 山系裝備規劃器與天氣預報**
-    *   提供多日重裝、一日輕裝等熱門路線模板。
-    *   動態計算背包的**基礎重量 (Base Weight)** 與**出發總重量**，並依路線難度給予超重警示。
-    *   **高山多點天氣選單**：串接 Open-Meteo 高解析度高山天氣 API，可自由切換查詢「登山口」、「中途山屋」或「峰頂」的 5 日預報，並附有官方**中央氣象署 (CWA) 山岳氣象**快捷連結。
-*   **📈 個人完登統計分析**
-    *   自動加總累計爬升高度，趣味折算「相當於爬了多少座聖母峰」。
-    *   利用圖表呈現您在各大山脈（如中央山脈、雪山山脈等）與難度級別的完登分布百分比。
-*   **🧭 離線路線守護與偏移警示**
-    *   行前載入標準 GPX 軌跡檔，在山上無網路環境下亦能即時讀取 GPS 位置。
-    *   當您偏離計畫航跡超過安全閾值（如 50 公尺）時，發出語音與聲響警示，防止迷途。
-    *   即時比對當前海拔與計畫高度的剖面對照。
-*   **🚨 離線野外求救助手**
-    *   即使無訊號，只要裝置具備 GPS，即可即時顯示當前精確經緯度。
-    *   提供**雙座標格式轉換**：轉換為搜救人員最常用的 **WGS84 簡報格式** 與 **TWD97 台灣二度分帶座標**。
-    *   內建面臨迷路失溫時的黃金求救應變檢核清單與指南。
+> **Taiwan Alpine Smart Planner & Guard (臺灣登山規劃與安全守護平台)**
+>
+> Version: `V20260619` | Repository: [begin0808/ClimbSmart](https://github.com/begin0808/ClimbSmart)
+>
+> 🔗 Live demo: <https://climbsmart.vercel.app/>
 
 ---
 
-## 🔒 隱私與安全 (Privacy & Safety)
-
-本專案採用**完全無伺服器後端 (Serverless)** 的本地優先儲存架構，具備以下優勢：
-
-1. **數據絕對私密與安全**：
-   - 使用瀏覽器的 `IndexedDB` 儲存照片，`LocalStorage` 儲存打卡紀錄。
-   - 所有照片及 GPX 航跡**絕不上傳任何雲端伺服器**。因為無後端伺服器，故**無資料遭侵入或資料庫洩漏的風險**，所有運算皆在用戶裝置上離線執行。
-   - *注意：建議定期於側邊欄點擊「備份」匯出紀錄檔案，防範清理瀏覽器快取時數據遺失。*
-2. **免下載安裝直接使用 (PWA)**：
-   - 任何人只要點擊網址即可開始使用，並可透過網頁「加入主畫面」以 **PWA 離線應用程式** 形式安裝至手機，體驗接近原生 APP。
-3. **專案維護費用 $0 元**：
-   - **網站託管**：部署在 Vercel 或 GitHub Pages，靜態網頁託管永久免費。
-   - **天氣與地圖**：Open-Meteo 天氣 API 請求由使用者手機 IP 直接發送，無統一負擔費用；地圖圖資使用開源的 Leaflet 與 OpenStreetMap (OSM)，**不產生任何衍生伺服器或 API 費用**。
+**ClimbSmart** is an all-in-one, **Local-First** Progressive Web App (PWA) built for hikers of Taiwan's high mountains. It combines a peak-bagging logbook for the **100 Peaks (百岳)** and **Little 100 Peaks (小百岳)**, backpack weight analysis, offline GPX off-route alerts, offline wilderness-rescue coordinate conversion, and live alpine weather forecasts — your companion for both trip planning and on-trail safety.
 
 ---
 
-## 🏷️ 版本控制說明
+## 🌟 Core Features
 
-本專案的版本號採用 **日期編碼系統**，例如：
-*   `Version V20260618`：代表 2026 年 6 月 18 日更新之版本。
-*   這能幫助登山客與社群協作者快速識別所安裝的 PWA 是否為最新快取。
+*   **🏆 Peak-Bagging Dashboard (100 Peaks & Little 100 Peaks)**
+    *   Coordinates, elevation, mountain range, difficulty and trivia for all **100 Peaks and 100 Little Peaks** across Taiwan.
+    *   Log summit dates, upload your own summit photos and notes, and watch a polished completion-progress ring.
+    *   One-click backup/export of every record and album (`.json`) so your data is never lost.
+*   **🗺️ Interactive Topographic & Satellite Maps**
+    *   Every peak marked on an interactive map, with filtering and search.
+    *   "Smooth fly-to" — tap a peak in the dashboard to instantly focus its location on the map.
+*   **🎒 Gear Planner & Weather Forecast**
+    *   Templates for popular routes (multi-day heavy, single-day light, etc.).
+    *   Dynamically computes **Base Weight** and **total pack weight**, with overweight warnings based on route difficulty.
+    *   **Multi-point alpine weather**: powered by the Open-Meteo high-resolution mountain weather API — switch between **trailhead**, **mountain hut** and **summit** 5-day forecasts, with a quick link to Taiwan's official **CWA mountain weather**.
+*   **📈 Personal Completion Statistics**
+    *   Automatically totals your cumulative ascent, playfully converted into "how many Everests you've climbed".
+    *   Charts your completion percentage across major ranges and difficulty levels.
+*   **🧭 Offline Route Guard & Off-Route Alert**
+    *   Load a standard GPX track before you go and read your live GPS position even with no signal.
+    *   When you stray beyond a safe threshold (e.g. 50 m) from the planned track, it triggers a voice + audible alert to prevent getting lost.
+    *   Real-time elevation-profile comparison of your current vs. planned altitude.
+*   **🚨 Offline Wilderness SOS**
+    *   With no signal but a working GPS chip, instantly shows your precise coordinates.
+    *   **Dual coordinate conversion**: the **WGS84 briefing format** and the **TWD97 (Taiwan 2-degree TM2 grid)** most used by search-and-rescue teams.
+    *   Built-in golden-hour rescue checklist and survival guidance for getting lost or hypothermia.
 
 ---
 
-## 💬 Bug 回報與功能許願 (Feedback & Support)
+## 🔒 Privacy & Safety
 
-我們非常重視每一位岳友的意見回饋！如果您在使用過程中遇到 Bug 或有新的想法：
+This project uses a completely **serverless**, Local-First storage architecture:
 
-1.  **GitHub Issues（技術性與公開討論）**：
-    *   歡迎在 [Issues 專區](https://github.com/begin0808/ClimbSmart/issues) 提交回報。
-2.  **Email 聯絡（直接來信）**：
-    *   您可以來信：`begin0808@gmail.com`
-    *   主旨請註明：`[智行百岳回報] 您的回報主題`
+1. **Absolute data privacy & security**
+   - Photos are stored in the browser's `IndexedDB`; logs in `LocalStorage`.
+   - Your photos and GPX tracks are **never uploaded to any cloud server**. With no backend, there is **no risk of intrusion or database leaks** — everything runs on your own device, offline.
+   - *Tip: periodically tap "Export" in the sidebar to back up your records, in case the browser cache is cleared.*
+2. **Install-free, instant use (PWA)**
+   - Just open the URL to start; use "Add to Home Screen" to install it as an offline PWA for a near-native app experience.
+3. **$0 maintenance cost**
+   - **Hosting**: deployed on Vercel / GitHub Pages — static hosting is free forever.
+   - **Weather & maps**: Open-Meteo requests are sent directly from the user's device IP; maps use open-source Leaflet + OpenStreetMap (OSM) — **no extra server or API fees**.
 
 ---
 
-## 📄 開源授權
+## 🏷️ Versioning
 
-本專案採用 **MIT 授權條款** 開源分享。
+Versions use a **date-encoded scheme**, e.g.:
+*   `Version V20260619` — the build updated on 19 June 2026.
+*   This helps hikers and contributors quickly tell whether their cached PWA is up to date.
 
-© 2026 Studio0808 智造實驗室. All rights reserved.
+---
+
+## 💬 Feedback & Support
+
+We value every hiker's feedback! If you hit a bug or have an idea:
+
+1.  **GitHub Issues** (technical / public discussion): submit at the [Issues page](https://github.com/begin0808/ClimbSmart/issues).
+2.  **Email**: `begin0808@gmail.com` — please prefix the subject with `[ClimbSmart]`.
+
+---
+
+## 📄 License
+
+Released under the **MIT License**.
+
+© 2026 Studio0808. All rights reserved.
